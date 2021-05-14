@@ -1,11 +1,11 @@
 package com.kz.anreadx.ui
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kz.anreadx.dispatcher.DispatcherSwitch
-import com.kz.anreadx.ktx.getValue
 import com.kz.anreadx.ktx.map
-import com.kz.anreadx.ktx.setValue
 import com.kz.anreadx.ktx.state
 import com.kz.anreadx.model.Feed
 import com.kz.anreadx.repository.MainRepository
