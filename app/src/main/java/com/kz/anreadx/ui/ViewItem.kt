@@ -32,12 +32,12 @@ private fun content(feed: Feed): String = feed.run { description }
     .run { XMLLexer(this) }
     .run {
         sequence {
-            var token = nextToken()
-            while (token.type != XMLLexer.EOF) {
-                if (token.type == XMLLexer.TEXT) {
-                    yield(token.text)
+            while (true) {
+                val nextToken = nextToken()
+                when (nextToken.type) {
+                    XMLLexer.EOF -> break
+                    XMLLexer.TEXT -> yield(nextToken.text)
                 }
-                token = nextToken()
             }
         }
     }
