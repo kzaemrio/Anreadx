@@ -1,8 +1,8 @@
 package com.kz.anreadx.ui
 
 import com.kz.anreadx.model.Feed
-import com.kz.anreadx.model.XMLLexer
 import com.kz.anreadx.model.feedTimeLabel
+import com.kz.anreadx.xml.XMLLexer
 import org.antlr.v4.runtime.CharStreams
 import org.threeten.bp.Instant
 import org.threeten.bp.ZoneId

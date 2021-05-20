@@ -1,0 +1,27 @@
+plugins {
+    id 'java-library'
+    id 'antlr'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    antlr "org.antlr:antlr4:4.9"
+}
+
+generateGrammarSource {
+    def pg = "com.kz.anreadx.xml"
+    arguments += [
+            "-listener",
+            "-visitor",
+            "-package", pg
+    ]
+    outputDirectory = file("$outputDirectory/$pg")
+}
