@@ -54,6 +54,7 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.7'
 }
 
 dependencies {
@@ -87,5 +88,5 @@ dependencies {
     implementation "com.squareup.okhttp3:logging-interceptor:4.9.1"
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
 
-    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.7'
+    implementation 'org.kodein.di:kodein-di-framework-compose:7.6.0'
 }

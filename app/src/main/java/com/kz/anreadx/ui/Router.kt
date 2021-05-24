@@ -4,9 +4,15 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
+import org.kodein.di.DI
+import org.kodein.di.compose.withDI
+
+val di = DI {
+
+}
 
 @Composable
-fun Router() {
+fun Router() = withDI(di) {
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = Router.FeedList.route) {
