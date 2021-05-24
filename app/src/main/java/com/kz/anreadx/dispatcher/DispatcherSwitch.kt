@@ -8,8 +8,7 @@ import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 
 
-@Singleton
-class DispatcherSwitch @Inject constructor(
+class DispatcherSwitch constructor(
     private val db: DB,
     private val io: IO,
     private val cpu: CPU
@@ -19,14 +18,12 @@ class DispatcherSwitch @Inject constructor(
     suspend fun <T> cpu(block: suspend CoroutineScope.() -> T) = withContext(cpu, block)
 }
 
-class DB @Inject constructor(executor: Executor) :
+class DB constructor(executor: Executor) :
     DispatcherWrapper(executor.asCoroutineDispatcher())
 
-class IO @Inject constructor() :
-    DispatcherWrapper(Dispatchers.IO)
+class IO : DispatcherWrapper(Dispatchers.IO)
 
-class CPU @Inject constructor() :
-    DispatcherWrapper(Dispatchers.Default)
+class CPU : DispatcherWrapper(Dispatchers.Default)
 
 open class DispatcherWrapper(private val dispatcher: CoroutineDispatcher) : CoroutineDispatcher() {
     override fun dispatch(context: CoroutineContext, block: Runnable) {

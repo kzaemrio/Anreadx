@@ -15,15 +15,72 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.kz.anreadx.R
 import com.kz.anreadx.ktx.ifFalse
+import com.kz.anreadx.model.RssXmlConverter
+import com.kz.anreadx.model.RssXmlFactory
+import com.kz.anreadx.model.RssXmlParser
+import com.kz.anreadx.network.RssService
+import com.kz.anreadx.repository.MainRepository
+import okhttp3.Interceptor
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import okio.ByteString
+import org.kodein.di.DI
+import org.kodein.di.bindSingleton
+import org.kodein.di.compose.instance
+import org.kodein.di.compose.subDI
+import org.kodein.di.instance
+import retrofit2.Retrofit
+import retrofit2.create
+
+private val xml = DI.Module("xml") {
+    bindSingleton { RssXmlParser() }
+
+    bindSingleton { RssXmlConverter(instance()) }
+
+    bindSingleton { RssXmlFactory(instance()) }
+}
+
+private val retrofit = DI.Module("retrofit") {
+    bindSingleton<RssService> {
+        Retrofit.Builder()
+            .baseUrl("https://www.ithome.com")
+            .client(instance())
+            .addConverterFactory(instance())
+            .build()
+            .create()
+    }
+
+    bindSingleton {
+        OkHttpClient.Builder()
+            .addNetworkInterceptor(instance<Interceptor>())
+            .build()
+    }
+
+    bindSingleton<Interceptor> {
+        HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.HEADERS
+        }
+    }
+}
+
+private val di: DI.MainBuilder.() -> Unit = {
+    importOnce(xml)
+    importOnce(retrofit)
+    bindSingleton { MainViewModel(instance(), instance()) }
+    bindSingleton { MainRepository(instance(), instance(), instance()) }
+}
 
 @Composable
-fun FeedList(store: FeedListStore = FeedListStore(), navToDetail: (String) -> Unit) {
+fun FeedList(navToDetail: (String) -> Unit) = subDI(diBuilder = di) {
+
+    val viewModel: MainViewModel by instance()
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.app_name)) },
                 actions = {
-                    IconButton(onClick = store::onClearAllClick) {
+                    IconButton(onClick = viewModel::clearAll) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_baseline_clear_all_24),
                             contentDescription = stringResource(id = R.string.menu_clear_all)
@@ -33,20 +90,18 @@ fun FeedList(store: FeedListStore = FeedListStore(), navToDetail: (String) -> Un
             )
         }
     ) {
-        val state = rememberSwipeRefreshState(store.isLoading)
+        val state = rememberSwipeRefreshState(viewModel.isLoading)
         SwipeRefresh(state = state, onRefresh = {
-            state.isRefreshing.ifFalse { store.onRefresh() }
+            state.isRefreshing.ifFalse { viewModel.updateList() }
         }) {
-            val onItemClick: (String) -> Unit = navToDetail
+            val onItemClick: (String) -> Unit = {
+                viewModel.read(it)
+                navToDetail(it)
+            }
             FeedList(
-                list = store.list,
+                list = viewModel.list,
                 onItemClick = onItemClick
             )
-            Button(onClick = {
-                navToDetail("2333")
-            }) {
-
-            }
         }
     }
 }
