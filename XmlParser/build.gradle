@@ -19,8 +19,8 @@ dependencies {
 generateGrammarSource {
     def pg = "com.kz.anreadx.xml"
     arguments += [
-            "-listener",
-            "-visitor",
+            "-no-listener",
+            "-no-visitor",
             "-package", pg
     ]
     outputDirectory = file("$outputDirectory/$pg")
