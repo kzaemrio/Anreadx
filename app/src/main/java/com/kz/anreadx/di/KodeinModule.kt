@@ -10,8 +10,8 @@ import com.kz.anreadx.model.RssXmlFactory
 import com.kz.anreadx.model.RssXmlParser
 import com.kz.anreadx.network.RssService
 import com.kz.anreadx.persistence.AppDatabase
-import com.kz.anreadx.repository.MainRepository
-import com.kz.anreadx.ui.MainViewModel
+import com.kz.anreadx.repository.FeedListRepository
+import com.kz.anreadx.ui.FeedListViewModel
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -82,6 +82,6 @@ val di: DI.MainBuilder.() -> Unit = {
     importOnce(room)
     importOnce(xml)
     importOnce(retrofit)
-    bindSingleton { MainViewModel(instance(), instance()) }
-    bindSingleton { MainRepository(instance(), instance(), instance()) }
+    bindSingleton { FeedListViewModel(instance(), instance()) }
+    bindSingleton { FeedListRepository(instance(), instance(), instance()) }
 }

@@ -25,5 +25,5 @@ interface FeedDao {
     suspend fun read(link: String)
 
     @Query("SELECT * FROM feed WHERE link = :link LIMIT 1")
-    fun query(link: String): LiveData<Feed>
+    suspend fun query(link: String): Feed
 }

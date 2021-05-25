@@ -6,7 +6,7 @@ import com.kz.anreadx.network.RssService
 import com.kz.anreadx.persistence.FeedDao
 import java.util.concurrent.TimeUnit
 
-class MainRepository constructor(
+class FeedListRepository constructor(
     private val dispatcher: DispatcherSwitch,
     private val feedDao: FeedDao,
     private val rssService: RssService

@@ -4,29 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
-import androidx.room.Room
 import com.kz.anreadx.di.di
-import com.kz.anreadx.dispatcher.CPU
-import com.kz.anreadx.dispatcher.DB
-import com.kz.anreadx.dispatcher.DispatcherSwitch
-import com.kz.anreadx.dispatcher.IO
-import com.kz.anreadx.model.RssXmlConverter
-import com.kz.anreadx.model.RssXmlFactory
-import com.kz.anreadx.model.RssXmlParser
-import com.kz.anreadx.network.RssService
-import com.kz.anreadx.persistence.AppDatabase
-import com.kz.anreadx.repository.MainRepository
-import okhttp3.Interceptor
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
-import org.kodein.di.DI
-import org.kodein.di.bindSingleton
 import org.kodein.di.compose.subDI
-import org.kodein.di.instance
-import retrofit2.Retrofit
-import retrofit2.create
-import java.util.concurrent.Executor
-import java.util.concurrent.Executors
 import kotlin.streams.toList
 
 @Composable
@@ -44,12 +23,15 @@ fun Router() = subDI(diBuilder = di) {
             Router.FeedDetail.route,
             arguments = listOf(Router.FeedDetail.arg())
         ) {
-            FeedDetail(Router.FeedDetail.argOf(it))
+            FeedDetail(
+                link = Router.FeedDetail.argOf(it),
+                onBackClick = { navController.navigateUp() }
+            )
         }
     }
 }
 
-private object Router {
+object Router {
     object FeedList {
         const val route = "FeedList"
     }
@@ -61,7 +43,16 @@ private object Router {
         const val route = "$base/{$argKey}"
 
         // url link cannot be arg
-        fun routeOf(link: String): String = "$base/${link.chars().toList()}"
+        fun routeOf(link: String): String = "$base/${serial(link)}"
+
+        private fun serial(link: String): String = link.chars()
+            .toList()
+            .joinToString(separator = "[")
+
+        fun parse(charListString: String) = charListString.split("[")
+            .map { it.toInt() }
+            .map { it.toChar() }
+            .joinToString(separator = "")
 
         fun arg(): NamedNavArgument = navArgument(argKey) {
             type = NavType.StringType

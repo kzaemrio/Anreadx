@@ -8,12 +8,12 @@ import com.kz.anreadx.dispatcher.DispatcherSwitch
 import com.kz.anreadx.ktx.map
 import com.kz.anreadx.ktx.state
 import com.kz.anreadx.model.Feed
-import com.kz.anreadx.repository.MainRepository
+import com.kz.anreadx.repository.FeedListRepository
 import kotlinx.coroutines.launch
 
-class MainViewModel constructor(
+class FeedListViewModel constructor(
     private val dispatcher: DispatcherSwitch,
-    private val repository: MainRepository
+    private val repository: FeedListRepository
 ) : ViewModel() {
 
     var isLoading by state { false }

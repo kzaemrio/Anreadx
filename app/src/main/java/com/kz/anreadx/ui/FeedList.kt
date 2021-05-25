@@ -20,7 +20,7 @@ import org.kodein.di.compose.instance
 @Composable
 fun FeedList(navToDetail: (String) -> Unit) {
 
-    val viewModel: MainViewModel by instance()
+    val viewModel: FeedListViewModel by instance()
 
     Scaffold(
         topBar = {

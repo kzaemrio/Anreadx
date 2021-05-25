@@ -2,4 +2,5 @@
     <string name="app_name">Anreadx</string>
     <string name="refresh">refresh</string>
     <string name="menu_clear_all">clear all</string>
+    <string name="menu_back">go back</string>
 </resources>
