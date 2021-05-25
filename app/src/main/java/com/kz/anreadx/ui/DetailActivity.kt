@@ -9,9 +9,7 @@ import android.view.MenuItem
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
-import androidx.core.content.ContextCompat
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.kz.anreadx.R
 import com.kz.anreadx.di.FeedDaoEntryPoint
 import com.kz.anreadx.model.Feed
 import com.kz.anreadx.model.detailTimeLabel
