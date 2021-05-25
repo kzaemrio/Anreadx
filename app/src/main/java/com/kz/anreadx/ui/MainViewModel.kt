@@ -9,12 +9,9 @@ import com.kz.anreadx.ktx.map
 import com.kz.anreadx.ktx.state
 import com.kz.anreadx.model.Feed
 import com.kz.anreadx.repository.MainRepository
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-@HiltViewModel
-class MainViewModel @Inject constructor(
+class MainViewModel constructor(
     private val dispatcher: DispatcherSwitch,
     private val repository: MainRepository
 ) : ViewModel() {

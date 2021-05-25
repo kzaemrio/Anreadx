@@ -10,10 +10,8 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.kz.anreadx.di.FeedDaoEntryPoint
 import com.kz.anreadx.model.Feed
 import com.kz.anreadx.model.detailTimeLabel
-import dagger.hilt.android.EntryPointAccessors
 
 
 const val EXTRA_LINK = "EXTRA_LINK"
@@ -25,10 +23,6 @@ class DetailActivity : ComponentActivity() {
 
         actionBar?.setDisplayHomeAsUpEnabled(true)
 
-        EntryPointAccessors.fromApplication(
-            applicationContext,
-            FeedDaoEntryPoint::class.java
-        ).feedDao().query(intent.getStringExtra(EXTRA_LINK)!!).observe(this, ::bind)
     }
 
     private fun bind(feed: Feed) {

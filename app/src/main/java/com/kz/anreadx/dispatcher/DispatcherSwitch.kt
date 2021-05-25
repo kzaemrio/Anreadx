@@ -2,9 +2,6 @@ package com.kz.anreadx.dispatcher
 
 import kotlinx.coroutines.*
 import java.util.concurrent.Executor
-import java.util.concurrent.Executors
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 
 

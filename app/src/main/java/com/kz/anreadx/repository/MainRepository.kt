@@ -5,9 +5,8 @@ import com.kz.anreadx.model.Feed
 import com.kz.anreadx.network.RssService
 import com.kz.anreadx.persistence.FeedDao
 import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 
-class MainRepository @Inject constructor(
+class MainRepository constructor(
     private val dispatcher: DispatcherSwitch,
     private val feedDao: FeedDao,
     private val rssService: RssService
