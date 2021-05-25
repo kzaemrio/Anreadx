@@ -1,5 +1,4 @@
 plugins {
-    id 'java-library'
     id 'antlr'
 }
 
@@ -13,14 +12,19 @@ repositories {
 }
 
 dependencies {
-    antlr 'org.antlr:antlr4:4.9.2'
+    antlr("org.antlr:antlr4:4.9.2") {
+        exclude group: 'com.ibm.icu'
+        exclude group: 'org.glassfish'
+        exclude group: 'org.abego.treelayout'
+//        exclude group: 'org.antlr', module: 'antlr4-runtime'
+//        exclude group: 'org.antlr', module: 'antlr-runtime'
+//        exclude group: 'org.antlr', module: 'ST4'
+    }
 }
 
 generateGrammarSource {
     def pg = "com.kz.anreadx.xml"
     arguments += [
-            "-no-listener",
-            "-no-visitor",
             "-package", pg
     ]
     outputDirectory = file("$outputDirectory/$pg")
