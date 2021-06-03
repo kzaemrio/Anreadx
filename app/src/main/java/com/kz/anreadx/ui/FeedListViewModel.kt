@@ -1,14 +1,12 @@
 package com.kz.anreadx.ui
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kz.anreadx.dispatcher.DispatcherSwitch
 import com.kz.anreadx.ktx.map
-import com.kz.anreadx.ktx.state
 import com.kz.anreadx.model.Feed
 import com.kz.anreadx.repository.FeedListRepository
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class FeedListViewModel constructor(
@@ -16,29 +14,48 @@ class FeedListViewModel constructor(
     private val repository: FeedListRepository
 ) : ViewModel() {
 
-    var isLoading by state { false }
-        private set
+    private var isRefreshing = MutableStateFlow(false)
 
-    var list by state { emptyList<ViewItem>() }
-        private set
+    private var list = MutableStateFlow(emptyList<ViewItem>())
+
+    private val _uiStateFlow: MutableStateFlow<UiState> = MutableStateFlow(UiState())
+
+    val uiStateFlow: StateFlow<UiState>
+        get() = _uiStateFlow
 
     init {
+        viewModelScope.launch {
+            combine(isRefreshing, list, ::UiState).collect {
+                _uiStateFlow.value = it
+            }
+        }
         updateList()
     }
 
     private fun process(getFeedList: suspend () -> List<Feed>) = viewModelScope.launch {
-        isLoading = true
+        isRefreshing.emit(true)
         val feedList = getFeedList()
         val itemList = dispatcher.cpu {
             feedList.map { ViewItem(it) }
         }
-        list = itemList
-        isLoading = false
+        list.emit(itemList)
+        isRefreshing.emit(false)
     }
 
-    fun updateList() = process(repository::updateAndGet)
+    fun updateList() {
+        process(repository::updateAndGet)
+    }
 
-    fun clearAll() = process(repository::readAllAndGet)
+    fun clearAll() {
+        process(repository::readAllAndGet)
+    }
 
-    fun read(link: String) = process { repository.readAndGet(link) }
+    fun read(link: String) {
+        process { repository.readAndGet(link) }
+    }
 }
+
+data class UiState(
+    val isRefreshing: Boolean = false,
+    val list: List<ViewItem> = emptyList()
+)

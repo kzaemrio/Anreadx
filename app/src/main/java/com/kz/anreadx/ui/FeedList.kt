@@ -6,28 +6,61 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.kz.anreadx.R
-import com.kz.anreadx.ktx.ifFalse
+import com.kz.anreadx.dispatcher.DispatcherSwitch
+import com.kz.anreadx.repository.FeedListRepository
 import org.kodein.di.compose.instance
 
 @Composable
 fun FeedList(navToDetail: (String) -> Unit) {
 
-    val viewModel: FeedListViewModel by instance()
+    val dispatcher: DispatcherSwitch by instance()
+    val repository: FeedListRepository by instance()
+    val viewModel: FeedListViewModel = viewModel(factory = object : ViewModelProvider.Factory {
+        override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+            @Suppress("UNCHECKED_CAST")
+            return FeedListViewModel(dispatcher = dispatcher, repository = repository) as T
+        }
+    })
 
+    val state: UiState by viewModel.uiStateFlow.collectAsState()
+
+    FeedList(
+        state = state,
+        onRefresh = viewModel::updateList,
+        onClear = viewModel::clearAll,
+        onItemClick = {
+            viewModel.read(it)
+            navToDetail(it)
+        }
+    )
+}
+
+@Composable
+fun FeedList(
+    state: UiState,
+    onRefresh: () -> Unit,
+    onClear: () -> Unit,
+    onItemClick: (String) -> Unit
+) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.app_name)) },
                 actions = {
-                    IconButton(onClick = viewModel::clearAll) {
+                    IconButton(onClick = onClear) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_baseline_clear_all_24),
                             contentDescription = stringResource(id = R.string.menu_clear_all)
@@ -37,16 +70,9 @@ fun FeedList(navToDetail: (String) -> Unit) {
             )
         }
     ) {
-        val state = rememberSwipeRefreshState(viewModel.isLoading)
-        SwipeRefresh(state = state, onRefresh = {
-            state.isRefreshing.ifFalse { viewModel.updateList() }
-        }) {
-            val onItemClick: (String) -> Unit = {
-                viewModel.read(it)
-                navToDetail(it)
-            }
+        SwipeRefresh(state = rememberSwipeRefreshState(state.isRefreshing), onRefresh = onRefresh) {
             FeedList(
-                list = viewModel.list,
+                list = state.list,
                 onItemClick = onItemClick
             )
         }
