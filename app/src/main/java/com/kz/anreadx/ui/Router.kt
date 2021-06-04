@@ -6,7 +6,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import com.kz.anreadx.di.di
 import org.kodein.di.compose.subDI
-import kotlin.streams.toList
 
 @Composable
 fun Router() = subDI(diBuilder = di) {
@@ -45,14 +44,9 @@ object Router {
         // url link cannot be arg
         fun routeOf(link: String): String = "$base/${serial(link)}"
 
-        private fun serial(link: String): String = link.chars()
-            .toList()
-            .joinToString(separator = "[")
+        private fun serial(link: String): String = link.replace('/', '$')
 
-        fun parse(charListString: String) = charListString.split("[")
-            .map { it.toInt() }
-            .map { it.toChar() }
-            .joinToString(separator = "")
+        fun parse(link: String) = link.replace('$', '/')
 
         fun arg(): NamedNavArgument = navArgument(argKey) {
             type = NavType.StringType
