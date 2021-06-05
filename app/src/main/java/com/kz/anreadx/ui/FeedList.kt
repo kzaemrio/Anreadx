@@ -13,28 +13,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.kz.anreadx.R
-import com.kz.anreadx.dispatcher.DispatcherSwitch
-import com.kz.anreadx.repository.FeedListRepository
-import org.kodein.di.compose.instance
 
 @Composable
 fun FeedList(navToDetail: (String) -> Unit) {
 
-    val dispatcher: DispatcherSwitch by instance()
-    val repository: FeedListRepository by instance()
-    val viewModel: FeedListViewModel = viewModel(factory = object : ViewModelProvider.Factory {
-        override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-            @Suppress("UNCHECKED_CAST")
-            return FeedListViewModel(dispatcher = dispatcher, repository = repository) as T
-        }
-    })
-
+    val viewModel = vmKodein(::FeedListViewModel)
     val state: UiState by viewModel.uiStateFlow.collectAsState()
 
     FeedList(
