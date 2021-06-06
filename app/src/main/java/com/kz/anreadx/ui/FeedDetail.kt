@@ -1,12 +1,9 @@
 package com.kz.anreadx.ui
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -47,11 +44,13 @@ fun FeedDetail(onBackClick: () -> Unit) {
 
 @Composable
 fun FeedDetailList(list: List<DetailItem>) {
-    LazyColumn(Modifier.padding(horizontal = 16.dp)) {
-        item {
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-        items(list) {
+    Column(
+        Modifier
+            .padding(horizontal = 16.dp)
+            .verticalScroll(rememberScrollState())
+    ) {
+        Spacer(modifier = Modifier.height(16.dp))
+        list.forEach {
             when (it) {
                 is DetailItem.Image -> Image(
                     modifier = Modifier.fillMaxWidth(),
@@ -64,8 +63,6 @@ fun FeedDetailList(list: List<DetailItem>) {
 
             Spacer(modifier = Modifier.height(8.dp))
         }
-        item {
-            Spacer(modifier = Modifier.height(16.dp))
-        }
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
