@@ -2,6 +2,8 @@
 
 Just an android app to show [ithome rss](https://www.ithome.com/rss) feed list
 
+#### jetpack compose requies Android Studio Preview version
+
 * [jetpack compose](https://developer.android.com/jetpack/compose): a modern declarative UI Toolkit for Android
 * [jetpack navigation-compose](https://developer.android.com/jetpack/androidx/releases/navigation): handle nav router and nav arguments with SavedStateHandle
 * [jetpack room](https://developer.android.com/jetpack/androidx/releases/room): db persistence library with annotationProcessor
