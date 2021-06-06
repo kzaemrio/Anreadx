@@ -5,7 +5,7 @@ import com.kz.anreadx.model.feedTimeLabel
 import com.kz.anreadx.xml.XMLLexer
 import org.antlr.v4.runtime.CharStreams
 
-data class ViewItem(
+data class FeedItem(
     val id: String,
     val title: String,
     val timeLabel: String,
@@ -13,7 +13,7 @@ data class ViewItem(
     val done: Boolean
 )
 
-fun ViewItem(feed: Feed) = ViewItem(
+fun FeedItem(feed: Feed) = FeedItem(
     id = id(feed),
     title = title(feed),
     timeLabel = timeLabel(feed),

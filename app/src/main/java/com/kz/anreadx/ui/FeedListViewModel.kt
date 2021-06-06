@@ -16,7 +16,7 @@ class FeedListViewModel constructor(
 
     private var isRefreshing = MutableStateFlow(false)
 
-    private var list = MutableStateFlow(emptyList<ViewItem>())
+    private var list = MutableStateFlow(emptyList<FeedItem>())
 
     private val _uiStateFlow: MutableStateFlow<UiState> = MutableStateFlow(UiState())
 
@@ -36,7 +36,7 @@ class FeedListViewModel constructor(
         isRefreshing.emit(true)
         val feedList = getFeedList()
         val itemList = dispatcher.cpu {
-            feedList.map { ViewItem(it) }
+            feedList.map { FeedItem(it) }
         }
         list.emit(itemList)
         isRefreshing.emit(false)
@@ -57,5 +57,5 @@ class FeedListViewModel constructor(
 
 data class UiState(
     val isRefreshing: Boolean = false,
-    val list: List<ViewItem> = emptyList()
+    val list: List<FeedItem> = emptyList()
 )

@@ -66,7 +66,7 @@ fun FeedList(
 }
 
 @Composable
-fun FeedList(list: List<ViewItem>, onItemClick: (String) -> Unit) {
+fun FeedList(list: List<FeedItem>, onItemClick: (String) -> Unit) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = 48.dp)
@@ -78,7 +78,7 @@ fun FeedList(list: List<ViewItem>, onItemClick: (String) -> Unit) {
 }
 
 @Composable
-fun Item(item: ViewItem, onItemClick: (String) -> Unit) {
+fun Item(item: FeedItem, onItemClick: (String) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()

@@ -22,10 +22,7 @@ fun Router() = subDI(diBuilder = di) {
             Router.FeedDetail.route,
             arguments = listOf(Router.FeedDetail.arg())
         ) {
-            FeedDetail(
-                link = Router.FeedDetail.argOf(it),
-                onBackClick = { navController.navigateUp() }
-            )
+            FeedDetail(onBackClick = { navController.navigateUp() })
         }
     }
 }
@@ -37,7 +34,8 @@ object Router {
 
     object FeedDetail {
         private const val base = "FeedDetail"
-        private const val argKey = "link"
+
+        const val argKey = "link"
 
         const val route = "$base/{$argKey}"
 
