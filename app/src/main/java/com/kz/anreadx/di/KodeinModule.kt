@@ -3,7 +3,6 @@ package com.kz.anreadx.di
 import androidx.room.Room
 import com.kz.anreadx.dispatcher.CPU
 import com.kz.anreadx.dispatcher.DB
-import com.kz.anreadx.dispatcher.DispatcherSwitch
 import com.kz.anreadx.dispatcher.IO
 import com.kz.anreadx.model.RssXmlConverter
 import com.kz.anreadx.model.RssXmlFactory
@@ -11,7 +10,6 @@ import com.kz.anreadx.model.RssXmlParser
 import com.kz.anreadx.network.RssService
 import com.kz.anreadx.persistence.AppDatabase
 import com.kz.anreadx.repository.FeedListRepository
-import com.kz.anreadx.ui.FeedListViewModel
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -24,7 +22,6 @@ import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
 private val dispatcher = DI.Module(name = "dispatcher") {
-    bindSingleton { DispatcherSwitch(instance(), instance(), instance()) }
     bindSingleton { DB(instance()) }
     bindSingleton { IO() }
     bindSingleton { CPU() }
@@ -82,6 +79,5 @@ val di: DI.MainBuilder.() -> Unit = {
     importOnce(room)
     importOnce(xml)
     importOnce(retrofit)
-    bindSingleton { FeedListViewModel(instance(), instance()) }
-    bindSingleton { FeedListRepository(instance(), instance(), instance()) }
+    bindSingleton { FeedListRepository(instance(), instance(), instance(), instance()) }
 }

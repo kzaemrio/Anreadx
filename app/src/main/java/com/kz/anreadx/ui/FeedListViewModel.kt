@@ -2,15 +2,16 @@ package com.kz.anreadx.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kz.anreadx.dispatcher.DispatcherSwitch
+import com.kz.anreadx.dispatcher.CPU
 import com.kz.anreadx.ktx.map
 import com.kz.anreadx.model.Feed
 import com.kz.anreadx.repository.FeedListRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class FeedListViewModel constructor(
-    private val dispatcher: DispatcherSwitch,
+    private val cpu: CPU,
     private val repository: FeedListRepository
 ) : ViewModel() {
 
@@ -35,7 +36,7 @@ class FeedListViewModel constructor(
     private fun process(getFeedList: suspend () -> List<Feed>) = viewModelScope.launch {
         isRefreshing.emit(true)
         val feedList = getFeedList()
-        val itemList = dispatcher.cpu {
+        val itemList = withContext(cpu) {
             feedList.map { FeedItem(it) }
         }
         list.emit(itemList)
