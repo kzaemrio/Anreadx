@@ -47,6 +47,10 @@ android {
     }
 }
 
+repositories {
+    maven { url 'https://jitpack.io' }
+}
+
 dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
@@ -87,4 +91,6 @@ dependencies {
     }
 
     implementation "com.gitlab.mvysny.konsume-xml:konsume-xml:1.0"
+
+    implementation "com.github.haroldadmin:NetworkResponseAdapter:4.2.1"
 }
