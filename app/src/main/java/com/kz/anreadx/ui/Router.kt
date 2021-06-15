@@ -22,7 +22,9 @@ fun Router() = subDI(diBuilder = di) {
             Router.FeedDetail.route,
             arguments = listOf(Router.FeedDetail.arg())
         ) {
-            FeedDetail(onBackClick = { navController.navigateUp() })
+            FeedDetail(onBackClick = {
+                navController.popBackStack()
+            })
         }
     }
 }

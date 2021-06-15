@@ -1,12 +1,15 @@
 package com.kz.anreadx.ui
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kz.anreadx.dispatcher.CPU
 import com.kz.anreadx.ktx.map
-import com.kz.anreadx.model.Feed
 import com.kz.anreadx.repository.FeedListRepository
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -27,33 +30,30 @@ class FeedListViewModel constructor(
     init {
         viewModelScope.launch {
             combine(isRefreshing, list, ::UiState).collect {
-                _uiStateFlow.value = it
+                _uiStateFlow.emit(it)
             }
         }
         updateList()
     }
 
-    private fun process(getFeedList: suspend () -> List<Feed>) = viewModelScope.launch {
+    private fun process(action: suspend () -> Unit) = viewModelScope.launch {
         isRefreshing.emit(true)
-        val feedList = getFeedList()
-        val itemList = withContext(cpu) {
-            feedList.map { FeedItem(it) }
+        action()
+        val feedItemList = withContext(cpu) {
+            repository.getList().map { FeedItem(it) }
         }
-        list.emit(itemList)
+        list.emit(feedItemList)
         isRefreshing.emit(false)
     }
 
     fun updateList() {
-        process(repository::updateAndGet)
+        process(repository::update)
     }
 
     fun clearAll() {
-        process(repository::readAllAndGet)
+        process(repository::readAll)
     }
 
-    fun read(link: String) {
-        process { repository.readAndGet(link) }
-    }
 }
 
 data class UiState(

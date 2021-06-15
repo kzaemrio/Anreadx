@@ -17,11 +17,16 @@ class FeedDetailViewModel(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val link = flow<String> { emit(savedStateHandle.get(Router.FeedDetail.argKey)!!) }
-        .map { Router.FeedDetail.parse(it) }
+    private val link by lazy {
+        savedStateHandle.get<String>(Router.FeedDetail.argKey)!!.let {
+            Router.FeedDetail.parse(it)
+        }
+    }
 
     val detailItemList: Flow<List<DetailItem>>
-        get() = link.map { feedDao.query(it) }
+        get() = flow { emit(link) }
+            .onEach { feedDao.read(it) }
+            .map { feedDao.query(it) }
             .flowOn(db)
             .map { it.description }
             .map { HTMLLexer(CharStreams.fromString(it)) }
@@ -47,5 +52,6 @@ class FeedDetailViewModel(
                         }
                     }
                 }.toList()
-            }.flowOn(cpu)
+            }
+            .flowOn(cpu)
 }

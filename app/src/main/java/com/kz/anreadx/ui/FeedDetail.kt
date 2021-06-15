@@ -35,7 +35,6 @@ fun FeedDetail(onBackClick: () -> Unit) {
         val list by vmKodein(::FeedDetailViewModel)
             .detailItemList
             .collectAsState(
-                context = rememberCoroutineScope().coroutineContext,
                 initial = emptyList()
             )
         FeedDetailList(list)

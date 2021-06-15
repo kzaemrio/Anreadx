@@ -27,10 +27,7 @@ fun FeedList(navToDetail: (String) -> Unit) {
         state = state,
         onRefresh = viewModel::updateList,
         onClear = viewModel::clearAll,
-        onItemClick = {
-            viewModel.read(it)
-            navToDetail(it)
-        }
+        onItemClick = navToDetail
     )
 }
 
