@@ -1,5 +1,6 @@
 package com.kz.anreadx.repository
 
+import com.haroldadmin.cnradapter.NetworkResponse
 import com.kz.anreadx.dispatcher.DB
 import com.kz.anreadx.dispatcher.IO
 import com.kz.anreadx.model.Feed
@@ -22,10 +23,10 @@ class FeedListRepository constructor(
 
     suspend fun update() {
         withContext(db) {
-            feedDao.insert(request())
             feedDao.deleteBefore(
                 System.currentTimeMillis() - TimeUnit.DAYS.toMillis(2)
             )
+            feedDao.insert(request())
         }
     }
 
@@ -36,6 +37,11 @@ class FeedListRepository constructor(
     }
 
     private suspend fun request(): List<Feed> = withContext(io) {
-        rssService.request().channel.feedList
+        when (val response = rssService.request()) {
+            is NetworkResponse.Success -> response.body.channel.feedList
+            is NetworkResponse.ServerError -> throw response.error
+            is NetworkResponse.NetworkError -> throw response.error
+            is NetworkResponse.UnknownError -> throw response.error
+        }
     }
 }

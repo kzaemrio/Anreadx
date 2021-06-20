@@ -1,6 +1,5 @@
 package com.kz.anreadx.ui
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kz.anreadx.dispatcher.CPU
@@ -18,9 +17,11 @@ class FeedListViewModel constructor(
     private val repository: FeedListRepository
 ) : ViewModel() {
 
-    private var isRefreshing = MutableStateFlow(false)
+    private val isRefreshing = MutableStateFlow(false)
 
-    private var list = MutableStateFlow(emptyList<FeedItem>())
+    private val list = MutableStateFlow(emptyList<FeedItem>())
+
+    private val errorMessage = MutableStateFlow("")
 
     private val _uiStateFlow: MutableStateFlow<UiState> = MutableStateFlow(UiState())
 
@@ -29,7 +30,7 @@ class FeedListViewModel constructor(
 
     init {
         viewModelScope.launch {
-            combine(isRefreshing, list, ::UiState).collect {
+            combine(isRefreshing, list, errorMessage, ::UiState).collect {
                 _uiStateFlow.emit(it)
             }
         }
@@ -47,16 +48,25 @@ class FeedListViewModel constructor(
     }
 
     fun updateList() {
-        process(repository::update)
+        process {
+            errorMessage.emit("")
+            try {
+                repository.update()
+            } catch (e: Exception) {
+                e.message?.apply {
+                    errorMessage.emit(this)
+                }
+            }
+        }
     }
 
     fun clearAll() {
         process(repository::readAll)
     }
-
 }
 
 data class UiState(
     val isRefreshing: Boolean = false,
-    val list: List<FeedItem> = emptyList()
+    val list: List<FeedItem> = emptyList(),
+    val errorMessage: String = ""
 )

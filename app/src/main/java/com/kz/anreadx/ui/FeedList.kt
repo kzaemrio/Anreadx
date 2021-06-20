@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -16,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.kz.anreadx.R
+import com.kz.anreadx.ktx.ifTrue
 
 @Composable
 fun FeedList(navToDetail: (String) -> Unit) {
@@ -38,7 +40,16 @@ fun FeedList(
     onClear: () -> Unit,
     onItemClick: (String) -> Unit
 ) {
+    val scaffoldState = rememberScaffoldState()
+
+    LaunchedEffect(key1 = state.errorMessage) {
+        state.errorMessage.isNotBlank().ifTrue {
+            scaffoldState.snackbarHostState.showSnackbar(state.errorMessage)
+        }
+    }
+
     Scaffold(
+        scaffoldState = scaffoldState,
         topBar = {
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.app_name)) },

@@ -1,6 +1,7 @@
 package com.kz.anreadx.di
 
 import androidx.room.Room
+import com.haroldadmin.cnradapter.NetworkResponseAdapterFactory
 import com.kz.anreadx.dispatcher.CPU
 import com.kz.anreadx.dispatcher.DB
 import com.kz.anreadx.dispatcher.IO
@@ -56,10 +57,13 @@ private val retrofit = DI.Module("retrofit") {
         Retrofit.Builder()
             .baseUrl("https://www.ithome.com")
             .client(instance())
+            .addCallAdapterFactory(instance())
             .addConverterFactory(instance())
             .build()
             .create()
     }
+
+    bindSingleton { NetworkResponseAdapterFactory() }
 
     bindSingleton {
         OkHttpClient.Builder()
