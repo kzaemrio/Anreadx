@@ -21,7 +21,6 @@ import com.kz.anreadx.ktx.ifTrue
 
 @Composable
 fun FeedList(navToDetail: (String) -> Unit) {
-
     val viewModel = vmKodein(::FeedListViewModel)
     val state: UiState by viewModel.uiStateFlow.collectAsState()
 
@@ -41,10 +40,12 @@ fun FeedList(
     onItemClick: (String) -> Unit
 ) {
     val scaffoldState = rememberScaffoldState()
+    val snackbarHostState = scaffoldState.snackbarHostState
 
-    LaunchedEffect(key1 = state.errorMessage) {
-        state.errorMessage.isNotBlank().ifTrue {
-            scaffoldState.snackbarHostState.showSnackbar(state.errorMessage)
+    val errorMessage = state.errorMessage
+    errorMessage.isNotBlank().ifTrue {
+        LaunchedEffect(snackbarHostState) {
+            snackbarHostState.showSnackbar(errorMessage)
         }
     }
 
