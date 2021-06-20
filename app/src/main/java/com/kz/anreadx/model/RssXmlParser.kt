@@ -9,43 +9,31 @@ import java.io.InputStream
 
 class RssXmlParser {
     fun parse(inputStream: InputStream): Rss = inputStream.use { stream ->
-        return stream.konsumeXml().child("rss") { rss(this) }
+        return stream.konsumeXml().child("rss") { Rss() }
     }
 
-    private fun rss(k: Konsumer): Rss {
-        return k.guard("rss") {
-            Rss(child("channel") { channel(this) })
-        }
-    }
+    private fun Konsumer.Rss(): Rss = Rss(child("channel") { Channel() })
 
-    private fun channel(k: Konsumer): Channel {
-        return k.guard("channel") {
-            Channel(
-                childText("title").apply {
-                    child("language") { skipContents() }
-                    child("pubDate") { skipContents() }
-                    child("generator") { skipContents() }
-                    child("description") { skipContents() }
-                },
-                childText("link"),
-                children("item") { feed(this) }
-            )
-        }
-    }
+    private fun Konsumer.Channel(): Channel = Channel(
+        childText("title").apply {
+            child("language") { skipContents() }
+            child("pubDate") { skipContents() }
+            child("generator") { skipContents() }
+            child("description") { skipContents() }
+        },
+        childText("link"),
+        children("item") { Feed() }
+    )
 
-    private fun feed(k: Konsumer): Feed {
-        return k.guard("item") {
-            Feed(
-                childText("title"),
-                childText("description"),
-                childText("link").apply {
-                    child("guid") { skipContents() }
-                },
-                toLong(childText("pubDate")),
-                false,
-            )
-        }
-    }
+    private fun Konsumer.Feed(): Feed = Feed(
+        childText("title"),
+        childText("description"),
+        childText("link").apply {
+            child("guid") { skipContents() }
+        },
+        toLong(childText("pubDate")),
+        false,
+    )
 
     private fun toLong(trim: String): Long {
         val originalZonedDateTime = getZonedDateTime(trim)
@@ -61,10 +49,5 @@ class RssXmlParser {
         } catch (e: Exception) {
             ZonedDateTime.parse(time, DateTimeFormatter.RFC_1123_DATE_TIME)
         }
-    }
-
-    private inline fun <T> Konsumer.guard(name: String, block: Konsumer.() -> T): T {
-        checkCurrent(name)
-        return block()
     }
 }
