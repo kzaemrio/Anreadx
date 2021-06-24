@@ -25,7 +25,6 @@ class FeedDetailViewModel(
 
     val detailItemList: Flow<List<DetailItem>>
         get() = flow { emit(link) }
-            .onEach { feedDao.read(it) }
             .map { feedDao.query(it) }
             .flowOn(db)
             .map { it.description }

@@ -36,6 +36,10 @@ class FeedListRepository constructor(
         }
     }
 
+    suspend fun read(id: String) {
+        withContext(db) { feedDao.read(id) }
+    }
+
     private suspend fun request(): List<Feed> = withContext(io) {
         when (val response = rssService.request()) {
             is NetworkResponse.Success -> response.body.channel.feedList

@@ -17,7 +17,9 @@ import androidx.compose.ui.unit.dp
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.kz.anreadx.R
+import com.kz.anreadx.ktx.combine
 import com.kz.anreadx.ktx.ifTrue
+import com.kz.anreadx.ktx.then
 
 @Composable
 fun FeedList(navToDetail: (String) -> Unit) {
@@ -28,7 +30,7 @@ fun FeedList(navToDetail: (String) -> Unit) {
         state = state,
         onRefresh = viewModel::updateList,
         onClear = viewModel::clearAll,
-        onItemClick = navToDetail
+        onItemClick = combine(viewModel::read, FeedItem::id.then(navToDetail))
     )
 }
 
@@ -37,7 +39,7 @@ fun FeedList(
     state: UiState,
     onRefresh: () -> Unit,
     onClear: () -> Unit,
-    onItemClick: (String) -> Unit
+    onItemClick: (FeedItem) -> Unit
 ) {
     val scaffoldState = rememberScaffoldState()
     val snackbarHostState = scaffoldState.snackbarHostState
@@ -75,7 +77,7 @@ fun FeedList(
 }
 
 @Composable
-fun FeedList(list: List<FeedItem>, onItemClick: (String) -> Unit) {
+fun FeedList(list: List<FeedItem>, onItemClick: (FeedItem) -> Unit) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = 48.dp)
@@ -87,11 +89,11 @@ fun FeedList(list: List<FeedItem>, onItemClick: (String) -> Unit) {
 }
 
 @Composable
-fun Item(item: FeedItem, onItemClick: (String) -> Unit) {
+fun Item(item: FeedItem, onItemClick: (FeedItem) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onItemClick(item.id) }
+            .clickable { onItemClick(item) }
     ) {
         Spacer(modifier = Modifier.width(14.dp))
         Column(Modifier.weight(1F)) {

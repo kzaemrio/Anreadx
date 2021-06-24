@@ -3,6 +3,7 @@ package com.kz.anreadx.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kz.anreadx.dispatcher.CPU
+import com.kz.anreadx.ktx.ifFalse
 import com.kz.anreadx.ktx.map
 import com.kz.anreadx.repository.FeedListRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -62,6 +63,21 @@ class FeedListViewModel constructor(
 
     fun clearAll() {
         process(repository::readAll)
+    }
+
+    fun read(item: FeedItem) {
+        item.done.ifFalse {
+            viewModelScope.launch { repository.read(item.id) }
+            list.value.map {
+                if (it.id == item.id) {
+                    it.copy(done = true)
+                } else {
+                    it.copy()
+                }
+            }.apply {
+                viewModelScope.launch { list.emit(this@apply) }
+            }
+        }
     }
 }
 
