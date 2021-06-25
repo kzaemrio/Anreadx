@@ -1,16 +1,16 @@
 package com.kz.anreadx.ui
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.kz.anreadx.dispatcher.CPU
-import com.kz.anreadx.ktx.ifFalse
+import com.kz.anreadx.ktx.launch
 import com.kz.anreadx.ktx.map
+import com.kz.anreadx.ktx.reduce
+import com.kz.anreadx.model.Feed
 import com.kz.anreadx.repository.FeedListRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class FeedListViewModel constructor(
@@ -22,7 +22,7 @@ class FeedListViewModel constructor(
 
     private val list = MutableStateFlow(emptyList<FeedItem>())
 
-    private val errorMessage = MutableStateFlow("")
+    private val errorMessage = MutableStateFlow(NO_ERROR)
 
     private val _uiStateFlow: MutableStateFlow<UiState> = MutableStateFlow(UiState())
 
@@ -30,7 +30,7 @@ class FeedListViewModel constructor(
         get() = _uiStateFlow
 
     init {
-        viewModelScope.launch {
+        launch {
             combine(isRefreshing, list, errorMessage, ::UiState).collect {
                 _uiStateFlow.emit(it)
             }
@@ -38,51 +38,40 @@ class FeedListViewModel constructor(
         updateList()
     }
 
-    private fun process(action: suspend () -> Unit) = viewModelScope.launch {
-        isRefreshing.emit(true)
-        action()
-        val feedItemList = withContext(cpu) {
-            repository.getList().map { FeedItem(it) }
-        }
-        list.emit(feedItemList)
-        isRefreshing.emit(false)
-    }
-
     fun updateList() {
-        process {
-            errorMessage.emit("")
+        launch {
+            isRefreshing.reduce { true }
+            errorMessage.reduce { NO_ERROR }
             try {
                 repository.update()
             } catch (e: Exception) {
-                e.message?.apply {
-                    errorMessage.emit(this)
-                }
+                errorMessage.reduce { e.message ?: NO_ERROR }
             }
+            val feedList: List<Feed> = repository.getList()
+            val feedItemList = withContext(cpu) { feedList.map { FeedItem(feed = this) } }
+            list.reduce { feedItemList }
+            isRefreshing.reduce { false }
         }
     }
 
     fun clearAll() {
-        process(repository::readAll)
+        launch { repository.readAll() }
+
+        isRefreshing.reduce { true }
+        list.reduce { map { copy(done = true) } }
+        isRefreshing.reduce { false }
     }
 
     fun read(item: FeedItem) {
-        item.done.ifFalse {
-            viewModelScope.launch { repository.read(item.id) }
-            list.value.map {
-                if (it.id == item.id) {
-                    it.copy(done = true)
-                } else {
-                    it.copy()
-                }
-            }.apply {
-                viewModelScope.launch { list.emit(this@apply) }
-            }
-        }
+        launch { repository.read(item.id) }
+        list.reduce { map { copy(done = if (id == item.id) true else done) } }
     }
 }
 
 data class UiState(
     val isRefreshing: Boolean = false,
     val list: List<FeedItem> = emptyList(),
-    val errorMessage: String = ""
+    val errorMessage: String = NO_ERROR
 )
+
+private const val NO_ERROR = ""
