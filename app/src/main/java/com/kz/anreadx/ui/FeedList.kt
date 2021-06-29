@@ -17,12 +17,14 @@ import androidx.compose.ui.unit.dp
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.kz.anreadx.R
+import com.kz.anreadx.di.listDi
 import com.kz.anreadx.ktx.combine
 import com.kz.anreadx.ktx.ifTrue
 import com.kz.anreadx.ktx.then
+import org.kodein.di.compose.subDI
 
 @Composable
-fun FeedList(navToDetail: (String) -> Unit) {
+fun FeedList(navToDetail: (String) -> Unit) = subDI(diBuilder = listDi) {
     val viewModel = vmKodein(::FeedListViewModel)
     val state: UiState by viewModel.uiStateFlow.collectAsState()
 
