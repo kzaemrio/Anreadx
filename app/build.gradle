@@ -74,7 +74,7 @@ dependencies {
 
     implementation "androidx.startup:startup-runtime:1.0.0"
 
-    def accompanist_version = "0.12.0"
+    def accompanist_version = "0.13.0"
     implementation "com.google.accompanist:accompanist-swiperefresh:$accompanist_version"
     implementation ("com.google.accompanist:accompanist-coil:$accompanist_version") {
         exclude group: 'androidx.appcompat'
