@@ -8,13 +8,11 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.coil.rememberCoilPainter
+import coil.compose.rememberImagePainter
 import com.kz.anreadx.R
 
 @Composable
@@ -52,9 +50,12 @@ fun FeedDetailList(list: List<DetailItem>) {
         list.forEach {
             when (it) {
                 is DetailItem.Image -> Image(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentScale = ContentScale.Crop,
-                    painter = rememberCoilPainter(it.url),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .defaultMinSize(minHeight = 100.dp),
+                    painter = rememberImagePainter(
+                        data = it.url,
+                    ),
                     contentDescription = it.url,
                 )
                 is DetailItem.Text -> Text(text = it.value)
