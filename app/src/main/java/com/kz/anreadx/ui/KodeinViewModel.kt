@@ -9,6 +9,7 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
 import org.kodein.di.compose.instance
+import org.kodein.di.compose.rememberInstance
 
 
 @Composable
@@ -24,14 +25,14 @@ inline fun <reified P1, reified P2, reified VM : ViewModel> vmKodein(block: (P1)
 @JvmName("vmKodeinP1P2FactoryVm")
 @Composable
 inline fun <reified P1, reified P2, reified VM : ViewModel> vmKodein(block: (P1) -> (P2) -> () -> VM): VM {
-    val p1: P1 by instance()
+    val p1: P1 by rememberInstance()
     return vmKodein(block(p1))
 }
 
 @JvmName("vmKodeinP1FactoryVm")
 @Composable
 inline fun <reified P1, reified VM : ViewModel> vmKodein(block: (P1) -> () -> VM): VM {
-    val p1: P1 by instance()
+    val p1: P1 by rememberInstance()
     return vmKodein(block(p1))
 }
 
@@ -58,21 +59,21 @@ inline fun <reified P1, reified P2, reified VM : ViewModel> vmKodein(block: (P1,
 @JvmName("vmKodeinP1P2P3SavedStateHandle")
 @Composable
 inline fun <reified P1, reified P2, reified P3, reified VM : ViewModel> vmKodein(block: (P1) -> (P2) -> (P3) -> (SavedStateHandle) -> VM): VM {
-    val p1: P1 by instance()
+    val p1: P1 by rememberInstance()
     return vmKodein(block(p1))
 }
 
 @JvmName("vmKodeinP1P2SavedStateHandle")
 @Composable
 inline fun <reified P1, reified P2, reified VM : ViewModel> vmKodein(block: (P1) -> (P2) -> (SavedStateHandle) -> VM): VM {
-    val p1: P1 by instance()
+    val p1: P1 by rememberInstance()
     return vmKodein(block(p1))
 }
 
 @JvmName("vmKodeinP1SavedStateHandle")
 @Composable
 inline fun <reified P1, reified VM : ViewModel> vmKodein(block: (P1) -> (SavedStateHandle) -> VM): VM {
-    val p1: P1 by instance()
+    val p1: P1 by rememberInstance()
     return vmKodein(block(p1))
 }
 
