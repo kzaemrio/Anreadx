@@ -1,17 +1,30 @@
 package com.kz.anreadx.ui
 
+import androidx.compose.animation.*
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavType
-import androidx.navigation.compose.*
+import androidx.navigation.compose.NamedNavArgument
+import androidx.navigation.compose.navArgument
+import com.google.accompanist.navigation.animation.AnimatedNavHost
+import com.google.accompanist.navigation.animation.composable
+import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.kz.anreadx.di.routerDi
 import org.kodein.di.compose.subDI
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun Router() = subDI(diBuilder = routerDi) {
-    val navController = rememberNavController()
+    val navController = rememberAnimatedNavController()
 
-    NavHost(navController = navController, startDestination = Router.FeedList.route) {
+    AnimatedNavHost(
+        navController = navController,
+        startDestination = Router.FeedList.route,
+        enterTransition = { _, _ -> fadeIn() + slideInHorizontally(initialOffsetX = { it / 2 }) },
+        exitTransition = { _, _ -> fadeOut() + slideOutHorizontally(targetOffsetX = { -it / 2 }) },
+        popEnterTransition = { _, _ -> fadeIn() + slideInHorizontally(initialOffsetX = { -it / 2 }) },
+        popExitTransition = { _, _ -> fadeOut() + slideOutHorizontally(targetOffsetX = { it / 2 }) }
+    ) {
         composable(Router.FeedList.route) {
             FeedList(navToDetail = { link ->
                 navController.navigate(Router.FeedDetail.routeOf(link))
