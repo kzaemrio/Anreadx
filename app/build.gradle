@@ -2,6 +2,7 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id 'com.google.devtools.ksp' version '1.5.21-1.0.0-beta06'
+    id 'idea'
 }
 
 android {
@@ -94,4 +95,17 @@ dependencies {
     implementation "com.gitlab.mvysny.konsume-xml:konsume-xml:1.0"
 
     implementation "com.github.haroldadmin:NetworkResponseAdapter:4.2.1"
+
+    implementation "com.github.kzaemrio.FlowStore:annotation:0.0.3"
+    ksp("com.github.kzaemrio.FlowStore:compiler:0.0.3")
+}
+
+afterEvaluate {
+    idea {
+        android.sourceSets.forEach { sourceSet ->
+            sourceSet.java {
+                srcDir("build/generated/ksp/${sourceSet.name}/kotlin")
+            }
+        }
+    }
 }
