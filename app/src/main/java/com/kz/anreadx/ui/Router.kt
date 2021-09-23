@@ -2,10 +2,6 @@ package com.kz.anreadx.ui
 
 import androidx.compose.animation.*
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavType
-import androidx.navigation.compose.NamedNavArgument
-import androidx.navigation.compose.navArgument
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
@@ -31,10 +27,7 @@ fun Router() = subDI(diBuilder = routerDi) {
             })
         }
 
-        composable(
-            Router.FeedDetail.route,
-            arguments = listOf(Router.FeedDetail.arg())
-        ) {
+        composable(Router.FeedDetail.route) {
             FeedDetail(onBackClick = {
                 navController.popBackStack()
             })
@@ -60,11 +53,5 @@ object Router {
         private fun serial(link: String): String = link.replace('/', '$')
 
         fun parse(link: String) = link.replace('$', '/')
-
-        fun arg(): NamedNavArgument = navArgument(argKey) {
-            type = NavType.StringType
-        }
-
-        fun argOf(entry: NavBackStackEntry): String = entry.arguments!!.getString(argKey)!!
     }
 }
