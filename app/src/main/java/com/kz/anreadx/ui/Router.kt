@@ -16,10 +16,10 @@ fun Router() = subDI(diBuilder = routerDi) {
     AnimatedNavHost(
         navController = navController,
         startDestination = Router.FeedList.route,
-        enterTransition = { _, _ -> fadeIn() + slideInHorizontally(initialOffsetX = { it / 2 }) },
-        exitTransition = { _, _ -> fadeOut() + slideOutHorizontally(targetOffsetX = { -it / 2 }) },
-        popEnterTransition = { _, _ -> fadeIn() + slideInHorizontally(initialOffsetX = { -it / 2 }) },
-        popExitTransition = { _, _ -> fadeOut() + slideOutHorizontally(targetOffsetX = { it / 2 }) }
+        enterTransition = { fadeIn() + slideInHorizontally(initialOffsetX = { it / 2 }) },
+        exitTransition = { fadeOut() + slideOutHorizontally(targetOffsetX = { -it / 2 }) },
+        popEnterTransition = { fadeIn() + slideInHorizontally(initialOffsetX = { -it / 2 }) },
+        popExitTransition = { fadeOut() + slideOutHorizontally(targetOffsetX = { it / 2 }) }
     ) {
         composable(Router.FeedList.route) {
             FeedList(navToDetail = { link ->
