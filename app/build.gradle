@@ -5,6 +5,8 @@ plugins {
     id 'idea'
 }
 
+apply plugin: 'app.cash.molecule'
+
 android {
     compileSdk 31
     buildToolsVersion "30.0.3"
