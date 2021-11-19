@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewModelScope
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.kz.anreadx.R
@@ -21,18 +22,32 @@ import com.kz.anreadx.di.listDi
 import com.kz.anreadx.ktx.combine
 import com.kz.anreadx.ktx.ifTrue
 import com.kz.anreadx.ktx.then
+import kotlinx.coroutines.launch
 import org.kodein.di.compose.subDI
 
 @Composable
 fun FeedList(navToDetail: (String) -> Unit) = subDI(diBuilder = listDi) {
     val viewModel = vmKodein(::FeedListViewModel)
+    val sendChannel = viewModel.sendChannel
     val state: UiState by viewModel.uiStateFlow.collectAsState()
 
     FeedList(
         state = state,
-        onRefresh = viewModel::updateList,
-        onClear = viewModel::clearAll,
-        onItemClick = combine(viewModel::read, FeedItem::id.then(navToDetail))
+        onRefresh = {
+            viewModel.viewModelScope.launch {
+                sendChannel.send(OnRefresh)
+            }
+        },
+        onClear = {
+            viewModel.viewModelScope.launch {
+                sendChannel.send(OnReadAll)
+            }
+        },
+        onItemClick = combine({
+            viewModel.viewModelScope.launch {
+                sendChannel.send(OnFeedItemClick(it))
+            }
+        }, FeedItem::id.then(navToDetail))
     )
 }
 
@@ -123,3 +138,8 @@ fun Item(item: FeedItem, onItemClick: (FeedItem) -> Unit) {
         Spacer(modifier = Modifier.width(14.dp))
     }
 }
+
+sealed interface UiEvent
+object OnRefresh : UiEvent
+object OnReadAll : UiEvent
+data class OnFeedItemClick(val feedItem: FeedItem) : UiEvent
