@@ -7,5 +7,5 @@ import retrofit2.http.GET
 
 interface RssService {
     @GET("rss")
-    suspend fun request(): NetworkResponse<Rss, ServerError>
+    suspend fun rss(): NetworkResponse<Rss, ServerError>
 }

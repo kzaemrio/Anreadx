@@ -8,9 +8,10 @@ import com.kz.anreadx.model.Feed
 import com.kz.anreadx.repository.FeedListRepository
 import com.kz.anreadx.ui.UiStateStore.Companion.asStore
 import com.kz.flowstore.annotation.FlowStore
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class FeedListViewModel constructor(
     private val cpu: CPU,
@@ -30,14 +31,18 @@ class FeedListViewModel constructor(
         viewModelScope.launch {
             store.isRefreshing { true }
             store.errorMessage { NO_ERROR }
-            try {
-                repository.update()
+
+            val feedList: List<Feed> = try {
+                repository.updateAndGetList()
             } catch (e: Exception) {
                 store.errorMessage { e.message ?: NO_ERROR }
+                repository.localList()
             }
-            val feedList: List<Feed> = repository.getList()
-            val feedItemList =
-                withContext(cpu) { feedList.map { FeedItem(feed = this) } }
+
+            val feedItemList = feedList.map { feed ->
+                async(cpu) { FeedItem(feed) }
+            }.awaitAll()
+
             store.list { feedItemList }
             store.isRefreshing { false }
         }
