@@ -8,7 +8,6 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -22,17 +21,16 @@ import com.kz.anreadx.ktx.ifTrue
 import com.kz.anreadx.ktx.then
 
 @Composable
-fun FeedList(navToDetail: (String) -> Unit) {
-    val viewModel = vmKodein(::FeedListViewModel)
-    val eventChannel: (UiEvent) -> Unit = viewModel::send
-    val state: UiState by viewModel.uiStateFlow.collectAsState()
-
+fun FeedList(
+    navToDetail: (String) -> Unit,
+    viewModel: FeedListViewModel = vmKodein(::FeedListViewModel)
+) {
     FeedList(
-        state = state,
-        onRefresh = { eventChannel(OnRefresh) },
-        onClear = { eventChannel(OnReadAll) },
+        state = viewModel.uiStateFlow.collectAsState().value,
+        onRefresh = viewModel::onRefresh,
+        onClear = viewModel::onReadAll,
         onItemClick = combine(
-            { eventChannel(OnFeedItemClick(it)) },
+            viewModel::onFeedItemClick,
             FeedItem::id.then(navToDetail)
         )
     )
@@ -49,8 +47,8 @@ fun FeedList(
     val snackbarHostState = scaffoldState.snackbarHostState
 
     val errorMessage = state.errorMessage
-    errorMessage.isNotBlank().ifTrue {
-        LaunchedEffect(snackbarHostState) {
+    LaunchedEffect(errorMessage) {
+        errorMessage.isNotBlank().ifTrue {
             snackbarHostState.showSnackbar(errorMessage)
         }
     }
@@ -125,8 +123,3 @@ fun Item(item: FeedItem, onItemClick: (FeedItem) -> Unit) {
         Spacer(modifier = Modifier.width(14.dp))
     }
 }
-
-sealed interface UiEvent
-object OnRefresh : UiEvent
-object OnReadAll : UiEvent
-data class OnFeedItemClick(val feedItem: FeedItem) : UiEvent

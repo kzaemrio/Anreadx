@@ -8,9 +8,6 @@ import com.kz.anreadx.model.Feed
 import com.kz.anreadx.repository.FeedListRepository
 import com.kz.anreadx.ui.UiStateStore.Companion.asStore
 import com.kz.flowstore.annotation.FlowStore
-import kotlinx.coroutines.ObsoleteCoroutinesApi
-import kotlinx.coroutines.channels.SendChannel
-import kotlinx.coroutines.channels.actor
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -25,53 +22,42 @@ class FeedListViewModel constructor(
     val uiStateFlow: StateFlow<UiState>
         get() = store.flow
 
-    @OptIn(ObsoleteCoroutinesApi::class)
-    private val sendChannel: SendChannel<UiEvent> = viewModelScope.actor {
-        for (uiEvent in this) {
-            when (uiEvent) {
-                is OnFeedItemClick -> {
-                    launch { repository.read(uiEvent.feedItem.id) }
-                    launch {
-                        store.list { map { copy(done = if (id == uiEvent.feedItem.id) true else done) } }
-                    }
-                }
-                OnReadAll -> {
-                    launch { repository.readAll() }
-
-                    launch {
-                        store.isRefreshing { true }
-                        store.list { map { copy(done = true) } }
-                        store.isRefreshing { false }
-                    }
-                }
-                OnRefresh -> {
-                    launch {
-                        store.isRefreshing { true }
-                        store.errorMessage { NO_ERROR }
-                        try {
-                            repository.update()
-                        } catch (e: Exception) {
-                            store.errorMessage { e.message ?: NO_ERROR }
-                        }
-                        val feedList: List<Feed> = repository.getList()
-                        val feedItemList =
-                            withContext(cpu) { feedList.map { FeedItem(feed = this) } }
-                        store.list { feedItemList }
-                        store.isRefreshing { false }
-                    }
-                }
-            }
-        }
-    }
-
     init {
+        onRefresh()
+    }
+
+    fun onRefresh() {
         viewModelScope.launch {
-            sendChannel.send(OnRefresh)
+            store.isRefreshing { true }
+            store.errorMessage { NO_ERROR }
+            try {
+                repository.update()
+            } catch (e: Exception) {
+                store.errorMessage { e.message ?: NO_ERROR }
+            }
+            val feedList: List<Feed> = repository.getList()
+            val feedItemList =
+                withContext(cpu) { feedList.map { FeedItem(feed = this) } }
+            store.list { feedItemList }
+            store.isRefreshing { false }
         }
     }
 
-    fun send(event: UiEvent) {
-        viewModelScope.launch { sendChannel.send(event) }
+    fun onReadAll() {
+        viewModelScope.launch { repository.readAll() }
+
+        viewModelScope.launch {
+            store.isRefreshing { true }
+            store.list { map { copy(done = true) } }
+            store.isRefreshing { false }
+        }
+    }
+
+    fun onFeedItemClick(feedItem: FeedItem) {
+        viewModelScope.launch { repository.read(feedItem.id) }
+        viewModelScope.launch {
+            store.list { map { copy(done = if (id == feedItem.id) true else done) } }
+        }
     }
 }
 
