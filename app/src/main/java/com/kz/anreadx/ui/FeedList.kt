@@ -14,38 +14,27 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewModelScope
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.kz.anreadx.R
 import com.kz.anreadx.ktx.combine
 import com.kz.anreadx.ktx.ifTrue
 import com.kz.anreadx.ktx.then
-import kotlinx.coroutines.launch
 
 @Composable
 fun FeedList(navToDetail: (String) -> Unit) {
     val viewModel = vmKodein(::FeedListViewModel)
-    val sendChannel = viewModel.sendChannel
+    val eventChannel: (UiEvent) -> Unit = viewModel::send
     val state: UiState by viewModel.uiStateFlow.collectAsState()
 
     FeedList(
         state = state,
-        onRefresh = {
-            viewModel.viewModelScope.launch {
-                sendChannel.send(OnRefresh)
-            }
-        },
-        onClear = {
-            viewModel.viewModelScope.launch {
-                sendChannel.send(OnReadAll)
-            }
-        },
-        onItemClick = combine({
-            viewModel.viewModelScope.launch {
-                sendChannel.send(OnFeedItemClick(it))
-            }
-        }, FeedItem::id.then(navToDetail))
+        onRefresh = { eventChannel(OnRefresh) },
+        onClear = { eventChannel(OnReadAll) },
+        onItemClick = combine(
+            { eventChannel(OnFeedItemClick(it)) },
+            FeedItem::id.then(navToDetail)
+        )
     )
 }
 

@@ -26,7 +26,7 @@ class FeedListViewModel constructor(
         get() = store.flow
 
     @OptIn(ObsoleteCoroutinesApi::class)
-    val sendChannel: SendChannel<UiEvent> = viewModelScope.actor {
+    private val sendChannel: SendChannel<UiEvent> = viewModelScope.actor {
         for (uiEvent in this) {
             when (uiEvent) {
                 is OnFeedItemClick -> {
@@ -68,6 +68,10 @@ class FeedListViewModel constructor(
         viewModelScope.launch {
             sendChannel.send(OnRefresh)
         }
+    }
+
+    fun send(event: UiEvent) {
+        viewModelScope.launch { sendChannel.send(event) }
     }
 }
 
