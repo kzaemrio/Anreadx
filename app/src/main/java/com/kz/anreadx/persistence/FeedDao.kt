@@ -9,16 +9,16 @@ import com.kz.anreadx.model.Feed
 @Dao
 interface FeedDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insert(list: Iterable<Feed>)
+    suspend fun insert(feeds: Iterable<Feed>)
 
     @Query("DELETE FROM feed WHERE pubDate < :time")
     suspend fun deleteBefore(time: Long)
 
     @Query("SELECT * FROM feed ORDER BY pubDate DESC")
-    suspend fun getAll(): List<Feed>
+    suspend fun list(): List<Feed>
 
     @Query("UPDATE feed SET done = 1")
-    suspend fun clearAll()
+    suspend fun readAll()
 
     @Query("UPDATE feed SET done = 1 WHERE link = :link")
     suspend fun read(link: String)

@@ -27,7 +27,7 @@ class FeedListRepository constructor(
     }
 
     suspend fun localList(): List<Feed> = withContext(db) {
-        feedDao.getAll()
+        feedDao.list()
     }
 
     suspend fun refresh(): Unit = withContext(db) {
@@ -35,7 +35,7 @@ class FeedListRepository constructor(
     }
 
     suspend fun readAll(): Unit = withContext(db) {
-        feedDao.clearAll()
+        feedDao.readAll()
     }
 
     suspend fun read(id: String): Unit = withContext(db) {

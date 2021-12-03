@@ -37,27 +37,29 @@ class FeedListViewModel constructor(
                 store.errorMessage { e.message ?: NO_ERROR }
             }
 
-            val feedItemList = repository.localList().map { feed ->
+            repository.localList().map { feed ->
                 async(cpu) { FeedItem(feed) }
-            }.awaitAll()
+            }.awaitAll().apply { store.list { this@apply } }
 
-            store.list { feedItemList }
             store.isRefreshing { false }
         }
     }
 
     fun onReadAll() {
-        viewModelScope.launch { repository.readAll() }
+        viewModelScope.launch {
+            repository.readAll()
+        }
 
         viewModelScope.launch {
-            store.isRefreshing { true }
             store.list { map { copy(done = true) } }
-            store.isRefreshing { false }
         }
     }
 
     fun onFeedItemClick(feedItem: FeedItem) {
-        viewModelScope.launch { repository.read(feedItem.id) }
+        viewModelScope.launch {
+            repository.read(feedItem.id)
+        }
+
         viewModelScope.launch {
             store.list { map { copy(done = if (id == feedItem.id) true else done) } }
         }
