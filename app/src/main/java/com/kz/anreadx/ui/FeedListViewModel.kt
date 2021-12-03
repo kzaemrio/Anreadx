@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kz.anreadx.dispatcher.CPU
 import com.kz.anreadx.ktx.map
-import com.kz.anreadx.model.Feed
 import com.kz.anreadx.repository.FeedListRepository
 import com.kz.anreadx.ui.UiStateStore.Companion.asStore
 import com.kz.flowstore.annotation.FlowStore
@@ -32,14 +31,13 @@ class FeedListViewModel constructor(
             store.isRefreshing { true }
             store.errorMessage { NO_ERROR }
 
-            val feedList: List<Feed> = try {
-                repository.updateAndGetList()
+            try {
+                repository.refresh()
             } catch (e: Exception) {
                 store.errorMessage { e.message ?: NO_ERROR }
-                repository.localList()
             }
 
-            val feedItemList = feedList.map { feed ->
+            val feedItemList = repository.localList().map { feed ->
                 async(cpu) { FeedItem(feed) }
             }.awaitAll()
 

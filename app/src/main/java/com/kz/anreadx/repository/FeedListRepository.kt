@@ -26,26 +26,20 @@ class FeedListRepository constructor(
         }
     }
 
-    suspend fun updateAndGetList(): List<Feed> {
-        return withContext(db) {
-            val list = requestList()
-            feedDao.insert(list)
-            localList()
-        }
-    }
-
     suspend fun localList(): List<Feed> = withContext(db) {
         feedDao.getAll()
     }
 
-    suspend fun readAll() {
-        withContext(db) {
-            feedDao.clearAll()
-        }
+    suspend fun refresh(): Unit = withContext(db) {
+        feedDao.insert(requestList())
     }
 
-    suspend fun read(id: String) {
-        withContext(db) { feedDao.read(id) }
+    suspend fun readAll(): Unit = withContext(db) {
+        feedDao.clearAll()
+    }
+
+    suspend fun read(id: String): Unit = withContext(db) {
+        feedDao.read(id)
     }
 
     private suspend fun requestList(): List<Feed> = withContext(io) {
