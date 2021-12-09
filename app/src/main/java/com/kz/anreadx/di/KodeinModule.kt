@@ -10,7 +10,10 @@ import com.kz.anreadx.model.RssXmlFactory
 import com.kz.anreadx.model.RssXmlParser
 import com.kz.anreadx.network.RssService
 import com.kz.anreadx.persistence.AppDatabase
+import com.kz.anreadx.persistence.FeedDao
+import com.kz.anreadx.persistence.LastPositionDao
 import com.kz.anreadx.repository.FeedListRepository
+import com.kz.anreadx.repository.LastPositionRepository
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -35,6 +38,7 @@ private val dispatcher = DI.Module(name = "dispatcher") {
 
 private val room = DI.Module(name = "room") {
     bindSingleton { instance<AppDatabase>().itemDao() }
+    bindSingleton { instance<AppDatabase>().lastPositionDao() }
     bindSingleton {
         Room.databaseBuilder(
             instance(),
@@ -43,7 +47,6 @@ private val room = DI.Module(name = "room") {
         ).setQueryExecutor(instance()).setQueryExecutor(instance()).build()
     }
 }
-
 
 private val xml = DI.Module("xml") {
     bindSingleton { RssXmlParser() }
@@ -87,4 +90,5 @@ val routerDi: DI.MainBuilder.() -> Unit = {
     importOnce(retrofit)
 
     bindSingleton { FeedListRepository(instance(), instance(), instance(), instance()) }
+    bindSingleton { LastPositionRepository(instance(), instance()) }
 }

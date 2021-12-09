@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -19,6 +20,7 @@ import com.kz.anreadx.R
 import com.kz.anreadx.ktx.combine
 import com.kz.anreadx.ktx.ifTrue
 import com.kz.anreadx.ktx.then
+import kotlinx.coroutines.CoroutineScope
 
 @Composable
 fun FeedList(
@@ -32,7 +34,8 @@ fun FeedList(
         onItemClick = combine(
             viewModel::onFeedItemClick,
             FeedItem::id.then(navToDetail)
-        )
+        ),
+        onListSettle = viewModel::onListSettle
     )
 }
 
@@ -41,7 +44,8 @@ fun FeedList(
     state: UiState,
     onRefresh: () -> Unit,
     onClear: () -> Unit,
-    onItemClick: (FeedItem) -> Unit
+    onItemClick: (FeedItem) -> Unit,
+    onListSettle: (Int, Int) -> Unit
 ) {
     val scaffoldState = rememberScaffoldState()
     val snackbarHostState = scaffoldState.snackbarHostState
@@ -70,22 +74,44 @@ fun FeedList(
         }
     ) {
         SwipeRefresh(state = rememberSwipeRefreshState(state.isRefreshing), onRefresh = onRefresh) {
-            FeedList(
-                list = state.list,
-                onItemClick = onItemClick
-            )
+            // box wrapper makes swipe refresh smooth
+            Box(Modifier.fillMaxSize()) {
+                FeedList(
+                    list = state.list,
+                    lastPosition = state.lastPosition,
+                    onItemClick = onItemClick,
+                    onListSettle = onListSettle
+                )
+            }
         }
     }
 }
 
 @Composable
-fun FeedList(list: List<FeedItem>, onItemClick: (FeedItem) -> Unit) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = 48.dp)
-    ) {
-        items(items = list, key = { it.id }) {
-            Item(item = it, onItemClick)
+fun FeedList(
+    list: List<FeedItem>,
+    lastPosition: Pair<Int, Int>,
+    onItemClick: (FeedItem) -> Unit,
+    onListSettle: (Int, Int) -> Unit
+) {
+    if (list.isNotEmpty()) {
+        val state = rememberLazyListState(
+            lastPosition.first.coerceAtLeast(0),
+            lastPosition.second.coerceAtLeast(0)
+        )
+
+        LaunchedEffectWhen(state.isScrollInProgress.not()) {
+            onListSettle(state.firstVisibleItemIndex, state.firstVisibleItemScrollOffset)
+        }
+
+        LazyColumn(
+            state = state,
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 48.dp)
+        ) {
+            items(items = list, key = { it.id }) {
+                Item(item = it, onItemClick)
+            }
         }
     }
 }
@@ -121,5 +147,14 @@ fun Item(item: FeedItem, onItemClick: (FeedItem) -> Unit) {
             Divider(Modifier.fillMaxWidth())
         }
         Spacer(modifier = Modifier.width(14.dp))
+    }
+}
+
+@Composable
+fun LaunchedEffectWhen(condition: Boolean, block: suspend CoroutineScope.() -> Unit) {
+    LaunchedEffect(condition) {
+        if (condition) {
+            block()
+        }
     }
 }

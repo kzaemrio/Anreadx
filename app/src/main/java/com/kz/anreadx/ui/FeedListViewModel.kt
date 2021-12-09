@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.kz.anreadx.dispatcher.CPU
 import com.kz.anreadx.ktx.map
 import com.kz.anreadx.repository.FeedListRepository
+import com.kz.anreadx.repository.LastPositionRepository
 import com.kz.anreadx.ui.UiStateStore.Companion.asStore
 import com.kz.flowstore.annotation.FlowStore
 import kotlinx.coroutines.async
@@ -14,7 +15,8 @@ import kotlinx.coroutines.launch
 
 class FeedListViewModel constructor(
     private val cpu: CPU,
-    private val repository: FeedListRepository
+    private val listRepository: FeedListRepository,
+    private val lastPositionRepository: LastPositionRepository
 ) : ViewModel() {
 
     private val store = UiState().asStore()
@@ -32,14 +34,27 @@ class FeedListViewModel constructor(
             store.errorMessage { NO_ERROR }
 
             try {
-                repository.refresh()
+                listRepository.refresh()
             } catch (e: Exception) {
                 store.errorMessage { e.message ?: NO_ERROR }
             }
 
-            repository.localList().map { feed ->
+            val list = listRepository.localList().map { feed ->
                 async(cpu) { FeedItem(feed) }
-            }.awaitAll().apply { store.list { this@apply } }
+            }.awaitAll()
+
+            val lastPosition: Pair<Int, Int> = lastPositionRepository.query()
+                ?.run { list.indexOfFirst { it.id == link } to offset }
+                ?.run {
+                    if (first >= 0) {
+                        this
+                    } else {
+                        NO_LAST_POSITION
+                    }
+                } ?: NO_LAST_POSITION
+
+            store.list { list }
+            store.lastPosition { lastPosition }
 
             store.isRefreshing { false }
         }
@@ -47,7 +62,7 @@ class FeedListViewModel constructor(
 
     fun onReadAll() {
         viewModelScope.launch {
-            repository.readAll()
+            listRepository.readAll()
         }
 
         viewModelScope.launch {
@@ -57,11 +72,20 @@ class FeedListViewModel constructor(
 
     fun onFeedItemClick(feedItem: FeedItem) {
         viewModelScope.launch {
-            repository.read(feedItem.id)
+            listRepository.read(feedItem.id)
         }
 
         viewModelScope.launch {
             store.list { map { copy(done = if (id == feedItem.id) true else done) } }
+        }
+    }
+
+    fun onListSettle(index: Int, offset: Int) {
+        val list = uiStateFlow.value.list
+        if (list.isNotEmpty()) {
+            viewModelScope.launch {
+                lastPositionRepository.insert(list[index].id, offset)
+            }
         }
     }
 }
@@ -70,7 +94,10 @@ class FeedListViewModel constructor(
 data class UiState(
     val isRefreshing: Boolean = false,
     val list: List<FeedItem> = emptyList(),
+    val lastPosition: Pair<Int, Int> = NO_LAST_POSITION,
     val errorMessage: String = NO_ERROR
 )
+
+private val NO_LAST_POSITION = -1 to -1
 
 private const val NO_ERROR = ""
