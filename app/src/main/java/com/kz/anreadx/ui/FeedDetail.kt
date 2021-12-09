@@ -1,6 +1,5 @@
 package com.kz.anreadx.ui
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -12,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import coil.compose.rememberAsyncImagePainter
+import coil.compose.AsyncImage
 import com.kz.anreadx.R
 
 @Composable
@@ -49,14 +48,16 @@ fun FeedDetailList(list: List<DetailItem>) {
         Spacer(modifier = Modifier.height(16.dp))
         list.forEach {
             when (it) {
-                is DetailItem.Image -> Image(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .defaultMinSize(minHeight = 100.dp),
-                    painter = rememberAsyncImagePainter(model = it.url),
-                    contentDescription = it.url,
-                )
-                is DetailItem.Text -> Text(text = it.value)
+                is DetailItem.Image -> {
+                    AsyncImage(
+                        modifier = Modifier.fillMaxWidth(),
+                        model = it.url,
+                        contentDescription = it.url
+                    )
+                }
+                is DetailItem.Text -> {
+                    Text(text = it.value)
+                }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
