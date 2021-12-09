@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import coil.compose.rememberAsyncImagePainter
 import coil.compose.rememberImagePainter
 import com.kz.anreadx.R
 
@@ -53,9 +54,7 @@ fun FeedDetailList(list: List<DetailItem>) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .defaultMinSize(minHeight = 100.dp),
-                    painter = rememberImagePainter(
-                        data = it.url,
-                    ),
+                    painter = rememberAsyncImagePainter(model = it.url),
                     contentDescription = it.url,
                 )
                 is DetailItem.Text -> Text(text = it.value)
