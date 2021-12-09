@@ -1,6 +1,7 @@
 package com.kz.anreadx.ui
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -21,6 +22,10 @@ import com.kz.anreadx.ktx.combine
 import com.kz.anreadx.ktx.ifTrue
 import com.kz.anreadx.ktx.then
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
 @Composable
 fun FeedList(
@@ -29,6 +34,7 @@ fun FeedList(
 ) {
     FeedList(
         state = viewModel.uiStateFlow.collectAsState().value,
+        scrollEventFlow = viewModel.scrollEventFlow,
         onRefresh = viewModel::onRefresh,
         onClear = viewModel::onReadAll,
         onItemClick = combine(
@@ -42,6 +48,7 @@ fun FeedList(
 @Composable
 fun FeedList(
     state: UiState,
+    scrollEventFlow: Flow<Unit>,
     onRefresh: () -> Unit,
     onClear: () -> Unit,
     onItemClick: (FeedItem) -> Unit,
@@ -79,6 +86,7 @@ fun FeedList(
                 FeedList(
                     list = state.list,
                     lastPosition = state.lastPosition,
+                    scrollEventFlow = scrollEventFlow,
                     onItemClick = onItemClick,
                     onListSettle = onListSettle
                 )
@@ -91,6 +99,7 @@ fun FeedList(
 fun FeedList(
     list: List<FeedItem>,
     lastPosition: Pair<Int, Int>,
+    scrollEventFlow: Flow<Unit>,
     onItemClick: (FeedItem) -> Unit,
     onListSettle: (Int, Int) -> Unit
 ) {
@@ -99,6 +108,13 @@ fun FeedList(
             lastPosition.first.coerceAtLeast(0),
             lastPosition.second.coerceAtLeast(0)
         )
+
+        LaunchedEffect(Unit) {
+            scrollEventFlow.onEach {
+                delay(200)
+                state.animateScrollBy(-16.dp.value)
+            }.launchIn(this)
+        }
 
         LaunchedEffectWhen(state.isScrollInProgress.not()) {
             onListSettle(state.firstVisibleItemIndex, state.firstVisibleItemScrollOffset)

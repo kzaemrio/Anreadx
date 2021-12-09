@@ -10,7 +10,10 @@ import com.kz.anreadx.ui.UiStateStore.Companion.asStore
 import com.kz.flowstore.annotation.FlowStore
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
 
 class FeedListViewModel constructor(
@@ -23,6 +26,11 @@ class FeedListViewModel constructor(
 
     val uiStateFlow: StateFlow<UiState>
         get() = store.flow
+
+    private val scrollEventChannel = Channel<Unit>()
+
+    val scrollEventFlow: Flow<Unit>
+        get() = scrollEventChannel.consumeAsFlow()
 
     init {
         onRefresh()
@@ -55,8 +63,11 @@ class FeedListViewModel constructor(
 
             store.list { list }
             store.lastPosition { lastPosition }
-
             store.isRefreshing { false }
+
+            if (lastPosition != NO_LAST_POSITION) {
+                scrollEventChannel.send(Unit)
+            }
         }
     }
 
