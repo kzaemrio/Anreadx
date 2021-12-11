@@ -19,22 +19,20 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.kz.anreadx.R
 import com.kz.anreadx.ktx.combine
-import com.kz.anreadx.ktx.ifTrue
 import com.kz.anreadx.ktx.then
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 
 @Composable
 fun FeedList(
     navToDetail: (String) -> Unit,
     viewModel: FeedListViewModel = vmKodein(::FeedListViewModel)
 ) {
+    val state = viewModel.uiStateFlow.collectAsState().value
+    val event = viewModel.uiEventFlow.collectAsState(initial = Nop).value
+
     FeedList(
-        state = viewModel.uiStateFlow.collectAsState().value,
-        scrollEventFlow = viewModel.scrollEventFlow,
+        state = state,
+        uiEvent = event,
         onRefresh = viewModel::onRefresh,
         onClear = viewModel::onReadAll,
         onItemClick = combine(
@@ -48,7 +46,7 @@ fun FeedList(
 @Composable
 fun FeedList(
     state: UiState,
-    scrollEventFlow: Flow<Unit>,
+    uiEvent: UiEvent,
     onRefresh: () -> Unit,
     onClear: () -> Unit,
     onItemClick: (FeedItem) -> Unit,
@@ -57,11 +55,8 @@ fun FeedList(
     val scaffoldState = rememberScaffoldState()
     val snackbarHostState = scaffoldState.snackbarHostState
 
-    val errorMessage = state.errorMessage
-    LaunchedEffect(errorMessage) {
-        errorMessage.isNotBlank().ifTrue {
-            snackbarHostState.showSnackbar(errorMessage)
-        }
+    LaunchedEffectWhen(condition = uiEvent is ErrorEvent) {
+        snackbarHostState.showSnackbar((uiEvent as ErrorEvent).message)
     }
 
     Scaffold(
@@ -86,7 +81,7 @@ fun FeedList(
                 FeedList(
                     list = state.list,
                     lastPosition = state.lastPosition,
-                    scrollEventFlow = scrollEventFlow,
+                    uiEvent = uiEvent,
                     onItemClick = onItemClick,
                     onListSettle = onListSettle
                 )
@@ -99,7 +94,7 @@ fun FeedList(
 fun FeedList(
     list: List<FeedItem>,
     lastPosition: Pair<Int, Int>,
-    scrollEventFlow: Flow<Unit>,
+    uiEvent: UiEvent,
     onItemClick: (FeedItem) -> Unit,
     onListSettle: (Int, Int) -> Unit
 ) {
@@ -109,11 +104,8 @@ fun FeedList(
             lastPosition.second.coerceAtLeast(0)
         )
 
-        LaunchedEffect(Unit) {
-            scrollEventFlow.onEach {
-                delay(200)
-                state.animateScrollBy(-16.dp.value)
-            }.launchIn(this)
+        LaunchedEffectWhen(condition = uiEvent is ScrollEvent) {
+            state.animateScrollBy(-16.dp.value)
         }
 
         LaunchedEffectWhen(state.isScrollInProgress.not()) {
@@ -168,8 +160,8 @@ fun Item(item: FeedItem, onItemClick: (FeedItem) -> Unit) {
 
 @Composable
 fun LaunchedEffectWhen(condition: Boolean, block: suspend CoroutineScope.() -> Unit) {
-    LaunchedEffect(condition) {
-        if (condition) {
+    if (condition) {
+        LaunchedEffect(Unit) {
             block()
         }
     }

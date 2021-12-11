@@ -11,6 +11,7 @@ import com.kz.flowstore.annotation.FlowStore
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.consumeAsFlow
@@ -27,10 +28,10 @@ class FeedListViewModel constructor(
     val uiStateFlow: StateFlow<UiState>
         get() = store.flow
 
-    private val scrollEventChannel = Channel<Unit>()
+    private val uiEventChannel = Channel<UiEvent>()
 
-    val scrollEventFlow: Flow<Unit>
-        get() = scrollEventChannel.consumeAsFlow()
+    val uiEventFlow: Flow<UiEvent>
+        get() = uiEventChannel.consumeAsFlow()
 
     init {
         onRefresh()
@@ -39,12 +40,11 @@ class FeedListViewModel constructor(
     fun onRefresh() {
         viewModelScope.launch {
             store.isRefreshing { true }
-            store.errorMessage { NO_ERROR }
 
             try {
                 listRepository.refresh()
             } catch (e: Exception) {
-                store.errorMessage { e.message ?: NO_ERROR }
+                uiEventChannel.send(ErrorEvent(e.message ?: "something wrong"))
             }
 
             val list = listRepository.localList().map { feed ->
@@ -66,7 +66,8 @@ class FeedListViewModel constructor(
             store.isRefreshing { false }
 
             if (lastPosition != NO_LAST_POSITION) {
-                scrollEventChannel.send(Unit)
+                delay(200)
+                uiEventChannel.send(ScrollEvent)
             }
         }
     }
@@ -106,9 +107,11 @@ data class UiState(
     val isRefreshing: Boolean = false,
     val list: List<FeedItem> = emptyList(),
     val lastPosition: Pair<Int, Int> = NO_LAST_POSITION,
-    val errorMessage: String = NO_ERROR
 )
 
 private val NO_LAST_POSITION = -1 to -1
 
-private const val NO_ERROR = ""
+sealed interface UiEvent
+object Nop : UiEvent
+object ScrollEvent : UiEvent
+data class ErrorEvent(val message: String) : UiEvent
