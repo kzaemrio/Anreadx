@@ -15,6 +15,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 class FeedListViewModel constructor(
@@ -30,8 +31,7 @@ class FeedListViewModel constructor(
 
     private val uiEventChannel = Channel<UiEvent>()
 
-    val uiEventFlow: Flow<UiEvent>
-        get() = uiEventChannel.consumeAsFlow()
+    val uiEventFlow: Flow<UiEvent> = uiEventChannel.receiveAsFlow()
 
     init {
         onRefresh()
