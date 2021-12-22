@@ -12,7 +12,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.swiperefresh.SwipeRefresh
@@ -34,7 +33,6 @@ fun FeedList(
         state = state,
         uiEvent = event,
         onRefresh = viewModel::onRefresh,
-        onClear = viewModel::onReadAll,
         onItemClick = combine(
             viewModel::onFeedItemClick,
             FeedItem::id.then(navToDetail)
@@ -48,7 +46,6 @@ fun FeedList(
     state: UiState,
     uiEvent: UiEvent,
     onRefresh: () -> Unit,
-    onClear: () -> Unit,
     onItemClick: (FeedItem) -> Unit,
     onListSettle: (Int, Int) -> Unit
 ) {
@@ -61,19 +58,7 @@ fun FeedList(
 
     Scaffold(
         scaffoldState = scaffoldState,
-        topBar = {
-            TopAppBar(
-                title = { Text(text = stringResource(id = R.string.app_name)) },
-                actions = {
-                    IconButton(onClick = onClear) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_baseline_clear_all_24),
-                            contentDescription = stringResource(id = R.string.menu_clear_all)
-                        )
-                    }
-                }
-            )
-        }
+        topBar = { TopAppBar(title = { Text(text = stringResource(id = R.string.app_name)) }) }
     ) {
         SwipeRefresh(state = rememberSwipeRefreshState(state.isRefreshing), onRefresh = onRefresh) {
             // box wrapper makes swipe refresh smooth

@@ -14,7 +14,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
@@ -34,12 +33,16 @@ class FeedListViewModel constructor(
     val uiEventFlow: Flow<UiEvent> = uiEventChannel.receiveAsFlow()
 
     init {
-        onRefresh()
+        onRefresh(readAll = false)
     }
 
-    fun onRefresh() {
+    fun onRefresh(readAll: Boolean = true) {
         viewModelScope.launch {
             store.isRefreshing { true }
+
+            if (readAll) {
+                launch { listRepository.readAll() }
+            }
 
             try {
                 listRepository.refresh()
@@ -69,16 +72,6 @@ class FeedListViewModel constructor(
                 delay(200)
                 uiEventChannel.send(ScrollEvent)
             }
-        }
-    }
-
-    fun onReadAll() {
-        viewModelScope.launch {
-            listRepository.readAll()
-        }
-
-        viewModelScope.launch {
-            store.list { map { copy(done = true) } }
         }
     }
 
