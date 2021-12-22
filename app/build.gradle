@@ -71,11 +71,11 @@ dependencies {
 
     implementation 'io.coil-kt:coil-compose:2.0.0-alpha05'
 
-    implementation ('org.kodein.di:kodein-di-framework-compose:7.9.0') {
+    implementation ('org.kodein.di:kodein-di-framework-compose:7.10.0') {
         exclude group: 'androidx.appcompat'
     }
 
-    def room_version = "2.4.0-beta01"
+    def room_version = "2.4.0"
     implementation "androidx.room:room-runtime:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
     ksp "androidx.room:room-compiler:$room_version"
