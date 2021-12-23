@@ -2,6 +2,7 @@ package com.kz.anreadx.ui
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.animateScrollBy
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -12,6 +13,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.swiperefresh.SwipeRefresh
@@ -114,7 +116,9 @@ fun Item(item: FeedItem, onItemClick: (FeedItem) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onItemClick(item) }
+            .pointerInput(Unit) {
+                detectTapGestures { onItemClick(item) }
+            }
     ) {
         Spacer(modifier = Modifier.width(14.dp))
         Column(Modifier.weight(1F)) {
