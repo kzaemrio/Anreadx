@@ -36,8 +36,12 @@ class FeedDetailViewModel(
                         when (token.type) {
                             HTMLLexer.EOF -> break
                             HTMLLexer.HTML_TEXT -> emit(DetailItem.Text(token.text))
-                            HTMLLexer.ATTVALUE_VALUE -> token.text.apply {
-                                contains("https").ifTrue {
+                            HTMLLexer.ATTVALUE_VALUE -> token.text.let {
+                                it.contains("https") and it.uppercase().let { upper ->
+                                    upper.contains("JPG") or upper.contains("PNG")
+                                }
+                            }.apply {
+                                ifTrue {
                                     emit(
                                         DetailItem.Image(
                                             token.text.replace(

@@ -2,10 +2,14 @@ package com.kz.anreadx.ui
 
 import androidx.compose.animation.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import coil.ImageLoader
+import coil.compose.LocalImageLoader
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.kz.anreadx.di.routerDi
+import org.kodein.di.compose.rememberInstance
 import org.kodein.di.compose.subDI
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -28,9 +32,12 @@ fun Router() = subDI(diBuilder = routerDi) {
         }
 
         composable(Router.FeedDetail.route) {
-            FeedDetail(onBackClick = {
-                navController.popBackStack()
-            })
+            val loader: ImageLoader by rememberInstance()
+            CompositionLocalProvider(LocalImageLoader provides loader) {
+                FeedDetail(onBackClick = {
+                    navController.popBackStack()
+                })
+            }
         }
     }
 }

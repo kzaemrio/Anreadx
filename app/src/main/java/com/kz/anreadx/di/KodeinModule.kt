@@ -1,6 +1,7 @@
 package com.kz.anreadx.di
 
 import androidx.room.Room
+import coil.ImageLoader
 import com.haroldadmin.cnradapter.NetworkResponseAdapterFactory
 import com.kz.anreadx.dispatcher.CPU
 import com.kz.anreadx.dispatcher.DB
@@ -10,8 +11,6 @@ import com.kz.anreadx.model.RssXmlFactory
 import com.kz.anreadx.model.RssXmlParser
 import com.kz.anreadx.network.RssService
 import com.kz.anreadx.persistence.AppDatabase
-import com.kz.anreadx.persistence.FeedDao
-import com.kz.anreadx.persistence.LastPositionDao
 import com.kz.anreadx.repository.FeedListRepository
 import com.kz.anreadx.repository.LastPositionRepository
 import okhttp3.Interceptor
@@ -91,4 +90,7 @@ val routerDi: DI.MainBuilder.() -> Unit = {
 
     bindSingleton { FeedListRepository(instance(), instance(), instance(), instance()) }
     bindSingleton { LastPositionRepository(instance(), instance()) }
+    bindSingleton {
+        ImageLoader.Builder(instance()).okHttpClient(okHttpClient = instance()).build()
+    }
 }
