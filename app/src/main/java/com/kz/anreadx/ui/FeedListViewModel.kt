@@ -70,7 +70,7 @@ class FeedListViewModel constructor(
 
             if (lastPosition != NO_LAST_POSITION) {
                 delay(200)
-                uiEventChannel.send(ScrollEvent)
+                uiEventChannel.send(ScrollEvent())
             }
         }
     }
@@ -106,5 +106,5 @@ private val NO_LAST_POSITION = -1 to -1
 
 sealed interface UiEvent
 object Nop : UiEvent
-object ScrollEvent : UiEvent
+data class ScrollEvent(val time: Long = System.currentTimeMillis()) : UiEvent
 data class ErrorEvent(val message: String) : UiEvent
