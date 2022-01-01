@@ -6,7 +6,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -18,7 +17,7 @@ import com.kz.anreadx.R
 @Composable
 fun FeedDetail(
     onBackClick: () -> Unit,
-    viewModel: FeedDetailViewModel =  viewModel()
+    viewModel: FeedDetailViewModel = viewModel()
 ) {
     Scaffold(topBar = {
         TopAppBar(
@@ -33,12 +32,7 @@ fun FeedDetail(
             }
         )
     }) {
-        val list by viewModel
-            .detailItemList
-            .collectAsState(
-                initial = emptyList()
-            )
-        FeedDetailList(list)
+        FeedDetailList(list = viewModel.stateFlow.collectAsState().value)
     }
 }
 

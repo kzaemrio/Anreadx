@@ -25,8 +25,6 @@ class DetailActivity : ComponentActivity() {
 
         val onBackClick = { finish() }
 
-        Log.e(TAG, "onCreate: ${imageLoader.hashCode()}")
-
         setContent {
             CompositionLocalProvider(LocalImageLoader provides imageLoader) {
                 FeedDetail(onBackClick)
@@ -34,6 +32,3 @@ class DetailActivity : ComponentActivity() {
         }
     }
 }
-
-private const val TAG = "DetailActivity"
-
