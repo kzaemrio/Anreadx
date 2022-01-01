@@ -4,8 +4,11 @@ import okhttp3.ResponseBody
 import retrofit2.Converter
 import retrofit2.Retrofit
 import java.lang.reflect.Type
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class RssXmlFactory constructor(private val rssXmlConverter: RssXmlConverter) :
+@Singleton
+class RssXmlFactory @Inject constructor(private val rssXmlConverter: RssXmlConverter) :
     Converter.Factory() {
     override fun responseBodyConverter(
         type: Type,

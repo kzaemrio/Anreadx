@@ -6,8 +6,11 @@ import org.threeten.bp.ZoneId
 import org.threeten.bp.ZonedDateTime
 import org.threeten.bp.format.DateTimeFormatter
 import java.io.InputStream
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class RssXmlParser {
+@Singleton
+class RssXmlParser @Inject constructor() {
     fun parse(inputStream: InputStream): Rss = inputStream.use { stream ->
         return stream.konsumeXml().child("rss") { Rss() }
     }

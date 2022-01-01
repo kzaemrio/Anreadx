@@ -8,6 +8,7 @@ import com.kz.anreadx.repository.FeedListRepository
 import com.kz.anreadx.repository.LastPositionRepository
 import com.kz.anreadx.ui.UiStateStore.Companion.asStore
 import com.kz.flowstore.annotation.FlowStore
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.Channel
@@ -16,8 +17,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class FeedListViewModel constructor(
+@HiltViewModel
+class FeedListViewModel @Inject constructor(
     private val cpu: CPU,
     private val listRepository: FeedListRepository,
     private val lastPositionRepository: LastPositionRepository

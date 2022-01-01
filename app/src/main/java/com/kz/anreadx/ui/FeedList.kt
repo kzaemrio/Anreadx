@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.kz.anreadx.R
@@ -26,7 +27,7 @@ import kotlinx.coroutines.CoroutineScope
 @Composable
 fun FeedList(
     navToDetail: (String) -> Unit,
-    viewModel: FeedListViewModel = vmKodein(::FeedListViewModel)
+    viewModel: FeedListViewModel = viewModel()
 ) {
     val state = viewModel.uiStateFlow.collectAsState().value
     val event = viewModel.uiEventFlow.collectAsState(initial = Nop).value

@@ -1,6 +1,5 @@
 package com.kz.anreadx.ui
 
-import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -12,12 +11,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import coil.compose.LocalImageLoader
 import com.kz.anreadx.R
 
 @Composable
-fun FeedDetail(onBackClick: () -> Unit) {
+fun FeedDetail(
+    onBackClick: () -> Unit,
+    viewModel: FeedDetailViewModel =  viewModel()
+) {
     Scaffold(topBar = {
         TopAppBar(
             title = { Text(text = stringResource(id = R.string.app_name)) },
@@ -31,7 +33,7 @@ fun FeedDetail(onBackClick: () -> Unit) {
             }
         )
     }) {
-        val list by vmKodein(::FeedDetailViewModel)
+        val list by viewModel
             .detailItemList
             .collectAsState(
                 initial = emptyList()

@@ -2,26 +2,26 @@ package com.kz.anreadx.ui
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import com.kz.anreadx.EXTRA_LINK
 import com.kz.anreadx.dispatcher.CPU
 import com.kz.anreadx.dispatcher.DB
 import com.kz.anreadx.ktx.ifTrue
 import com.kz.anreadx.persistence.FeedDao
 import com.kz.anreadx.xml.HTMLLexer
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import org.antlr.v4.runtime.CharStreams
+import javax.inject.Inject
 
-class FeedDetailViewModel(
+@HiltViewModel
+class FeedDetailViewModel @Inject constructor(
     private val db: DB,
     private val cpu: CPU,
     private val feedDao: FeedDao,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val link by lazy {
-        savedStateHandle.get<String>(Router.FeedDetail.argKey)!!.let {
-            Router.FeedDetail.parse(it)
-        }
-    }
+    private val link: String = savedStateHandle.get<String>(EXTRA_LINK)!!
 
     val detailItemList: Flow<List<DetailItem>>
         get() = flow { emit(link) }

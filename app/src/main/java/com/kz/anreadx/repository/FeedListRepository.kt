@@ -10,8 +10,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
-class FeedListRepository constructor(
+class FeedListRepository @Inject constructor(
     private val db: DB,
     private val io: IO,
     private val feedDao: FeedDao,
