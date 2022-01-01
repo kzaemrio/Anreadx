@@ -1,12 +1,12 @@
 package com.kz.anreadx.ui
 
+import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.AbstractSavedStateViewModelFactory
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavBackStackEntry
 import com.kz.anreadx.di.curry
 import org.kodein.di.compose.rememberInstance
 
@@ -45,10 +45,12 @@ inline fun <reified P1, reified VM : ViewModel> vmKodein(block: (P1) -> (SavedSt
 @JvmName("vmKodeinSavedStateFactoryVm")
 @Composable
 inline fun <reified VM : ViewModel> vmKodein(crossinline block: (SavedStateHandle) -> VM): VM {
-    val registryOwner: NavBackStackEntry = LocalViewModelStoreOwner.current as NavBackStackEntry
+
+    val activity: ComponentActivity = LocalContext.current as ComponentActivity
+
     return viewModel(factory = object : AbstractSavedStateViewModelFactory(
-        registryOwner,
-        registryOwner.arguments
+        activity,
+        activity.intent.extras
     ) {
         override fun <T : ViewModel?> create(
             key: String,
