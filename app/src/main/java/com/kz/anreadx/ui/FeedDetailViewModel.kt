@@ -33,9 +33,11 @@ class FeedDetailViewModel @Inject constructor(
             val feed = withContext(db) {
                 feedDao.query(link)
             }
-            val lexer = HTMLLexer(CharStreams.fromString(feed.description))
-            val detailItemFlow = detailItemFlow(lexer)
-            val list = detailItemFlow.flowOn(cpu).toList()
+            val list = withContext(cpu) {
+                detailItemFlow(
+                    HTMLLexer(CharStreams.fromString(feed.description))
+                ).toList()
+            }
             _stateFlow.emit(list)
         }
     }
