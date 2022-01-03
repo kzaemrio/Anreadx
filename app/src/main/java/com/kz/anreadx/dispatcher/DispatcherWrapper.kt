@@ -1,26 +1,24 @@
 package com.kz.anreadx.dispatcher
 
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExecutorCoroutineDispatcher
 import kotlinx.coroutines.Runnable
-import kotlinx.coroutines.asCoroutineDispatcher
 import java.util.concurrent.Executor
+import java.util.concurrent.ExecutorService
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 
 @Singleton
-class DB @Inject constructor(executor: Executor) :
-    DispatcherWrapper(executor.asCoroutineDispatcher())
+class Background @Inject constructor(executor: Executor) :
+    SimpleExecutorCoroutineDispatcher(executor)
 
-@Singleton
-class IO @Inject constructor() : DispatcherWrapper(Dispatchers.IO)
+abstract class SimpleExecutorCoroutineDispatcher constructor(override val executor: Executor) :
+    ExecutorCoroutineDispatcher() {
+    override fun close() {
+        (executor as? ExecutorService)?.shutdown()
+    }
 
-@Singleton
-class CPU @Inject constructor() : DispatcherWrapper(Dispatchers.Default)
-
-open class DispatcherWrapper(private val dispatcher: CoroutineDispatcher) : CoroutineDispatcher() {
     override fun dispatch(context: CoroutineContext, block: Runnable) {
-        dispatcher.dispatch(context, block)
+        executor.execute(block)
     }
 }

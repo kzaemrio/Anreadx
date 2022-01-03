@@ -1,8 +1,7 @@
 package com.kz.anreadx.repository
 
 import com.haroldadmin.cnradapter.NetworkResponse
-import com.kz.anreadx.dispatcher.DB
-import com.kz.anreadx.dispatcher.IO
+import com.kz.anreadx.dispatcher.Background
 import com.kz.anreadx.model.Feed
 import com.kz.anreadx.network.RssService
 import com.kz.anreadx.persistence.FeedDao
@@ -13,37 +12,36 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class FeedListRepository @Inject constructor(
-    private val db: DB,
-    private val io: IO,
+    private val background: Background,
     private val feedDao: FeedDao,
     private val rssService: RssService
 ) {
 
     init {
-        CoroutineScope(db).launch {
+        CoroutineScope(background).launch {
             feedDao.deleteBefore(
                 System.currentTimeMillis() - TimeUnit.DAYS.toMillis(2)
             )
         }
     }
 
-    suspend fun localList(): List<Feed> = withContext(db) {
+    suspend fun localList(): List<Feed> = withContext(background) {
         feedDao.list()
     }
 
-    suspend fun refresh(): Unit = withContext(db) {
+    suspend fun refresh(): Unit = withContext(background) {
         feedDao.insert(requestList())
     }
 
-    suspend fun readAll(): Unit = withContext(db) {
+    suspend fun readAll(): Unit = withContext(background) {
         feedDao.readAll()
     }
 
-    suspend fun read(id: String): Unit = withContext(db) {
+    suspend fun read(id: String): Unit = withContext(background) {
         feedDao.read(id)
     }
 
-    private suspend fun requestList(): List<Feed> = withContext(io) {
+    private suspend fun requestList(): List<Feed> = withContext(background) {
         when (val response = rssService.rss()) {
             is NetworkResponse.Success -> response.body.channel.feedList
             is NetworkResponse.ServerError -> throw response.error

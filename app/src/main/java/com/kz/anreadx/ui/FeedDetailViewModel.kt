@@ -4,8 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kz.anreadx.EXTRA_LINK
-import com.kz.anreadx.dispatcher.CPU
-import com.kz.anreadx.dispatcher.DB
+import com.kz.anreadx.dispatcher.Background
 import com.kz.anreadx.persistence.FeedDao
 import com.kz.anreadx.xml.HTMLLexer
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,8 +16,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class FeedDetailViewModel @Inject constructor(
-    db: DB,
-    cpu: CPU,
+    background: Background,
     feedDao: FeedDao,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -30,13 +28,10 @@ class FeedDetailViewModel @Inject constructor(
     init {
         val link: String = savedStateHandle.get<String>(EXTRA_LINK)!!
         viewModelScope.launch {
-            val feed = withContext(db) {
-                feedDao.query(link)
-            }
-            val list = withContext(cpu) {
-                detailItemFlow(
-                    HTMLLexer(CharStreams.fromString(feed.description))
-                ).toList()
+            val list = withContext(background) {
+                val description = feedDao.query(link).description
+                val lexer = HTMLLexer(CharStreams.fromString(description))
+                detailItemFlow(lexer).toList()
             }
             _stateFlow.emit(list)
         }

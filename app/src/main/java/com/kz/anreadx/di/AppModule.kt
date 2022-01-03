@@ -3,7 +3,10 @@ package com.kz.anreadx.di
 import android.content.Context
 import androidx.room.Room
 import coil.ImageLoader
+import coil.annotation.ExperimentalCoilApi
+import coil.disk.DiskCache
 import com.haroldadmin.cnradapter.NetworkResponseAdapterFactory
+import com.kz.anreadx.dispatcher.Background
 import com.kz.anreadx.model.RssXmlFactory
 import com.kz.anreadx.network.RssService
 import com.kz.anreadx.persistence.AppDatabase
@@ -14,6 +17,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import okhttp3.Dispatcher
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -22,6 +26,7 @@ import retrofit2.Converter
 import retrofit2.Retrofit
 import retrofit2.create
 import java.util.concurrent.Executor
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import javax.inject.Singleton
 
@@ -32,7 +37,7 @@ object AppModule {
     @Singleton
     fun provideExecutor(): Executor {
         return Executors.newSingleThreadExecutor {
-            Thread(it, "db-single-thread")
+            Thread(it, "bg-single-thread")
         }
     }
 
@@ -88,8 +93,9 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(interceptor: Interceptor): OkHttpClient {
+    fun provideOkHttpClient(executor: Executor, interceptor: Interceptor): OkHttpClient {
         return OkHttpClient.Builder()
+            .dispatcher(Dispatcher(executor as ExecutorService))
             .addNetworkInterceptor(interceptor)
             .build()
     }
@@ -102,9 +108,32 @@ object AppModule {
         }
     }
 
+    @OptIn(ExperimentalCoilApi::class)
     @Provides
     @Singleton
-    fun provide(@ApplicationContext context: Context, okHttpClient: OkHttpClient): ImageLoader {
-        return ImageLoader.Builder(context).okHttpClient(okHttpClient = okHttpClient).build()
+    fun provideImageLoader(
+        @ApplicationContext context: Context,
+        okHttpClient: OkHttpClient,
+        diskCache: DiskCache,
+        background: Background
+    ): ImageLoader {
+        return ImageLoader.Builder(context)
+            .okHttpClient(okHttpClient = okHttpClient)
+            .diskCache(diskCache)
+            .dispatcher(background)
+            .build()
+    }
+
+    @OptIn(ExperimentalCoilApi::class)
+    @Provides
+    @Singleton
+    fun provideDiskCache(
+        @ApplicationContext context: Context,
+        background: Background
+    ): DiskCache {
+        return DiskCache.Builder(context)
+            .directory(context.cacheDir.apply { mkdirs() }.resolve("coil_image_cache"))
+            .cleanupDispatcher(background)
+            .build()
     }
 }

@@ -2,7 +2,7 @@ package com.kz.anreadx.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kz.anreadx.dispatcher.CPU
+import com.kz.anreadx.dispatcher.Background
 import com.kz.anreadx.ktx.map
 import com.kz.anreadx.repository.FeedListRepository
 import com.kz.anreadx.repository.LastPositionRepository
@@ -21,7 +21,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class FeedListViewModel @Inject constructor(
-    private val cpu: CPU,
+    private val background: Background,
     private val listRepository: FeedListRepository,
     private val lastPositionRepository: LastPositionRepository
 ) : ViewModel() {
@@ -54,7 +54,7 @@ class FeedListViewModel @Inject constructor(
             }
 
             val list = listRepository.localList().map { feed ->
-                async(cpu) { FeedItem(feed) }
+                async(background) { FeedItem(feed) }
             }.awaitAll()
 
             val lastPosition: Pair<Int, Int> = lastPositionRepository.query()
