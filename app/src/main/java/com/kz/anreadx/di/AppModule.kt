@@ -34,6 +34,9 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object AppModule {
     @Provides
+    fun bindExecutorService(executor: Executor): ExecutorService = executor as ExecutorService
+
+    @Provides
     @Singleton
     fun provideExecutor(): Executor {
         return Executors.newSingleThreadExecutor {
@@ -93,9 +96,9 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(executor: Executor, interceptor: Interceptor): OkHttpClient {
+    fun provideOkHttpClient(executorService: ExecutorService, interceptor: Interceptor): OkHttpClient {
         return OkHttpClient.Builder()
-            .dispatcher(Dispatcher(executor as ExecutorService))
+            .dispatcher(Dispatcher(executorService))
             .addNetworkInterceptor(interceptor)
             .build()
     }
