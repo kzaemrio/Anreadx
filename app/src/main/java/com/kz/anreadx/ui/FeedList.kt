@@ -1,6 +1,5 @@
 package com.kz.anreadx.ui
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
@@ -22,7 +21,6 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.kz.anreadx.R
 import com.kz.anreadx.ktx.combine
 import com.kz.anreadx.ktx.then
-import kotlinx.coroutines.CoroutineScope
 
 @Composable
 fun FeedList(
@@ -50,13 +48,15 @@ fun FeedList(
     uiEvent: UiEvent,
     onRefresh: () -> Unit,
     onItemClick: (FeedItem) -> Unit,
-    onListSettle: (Int, Int) -> Unit
+    onListSettle: (String, Int) -> Unit
 ) {
     val scaffoldState = rememberScaffoldState()
     val snackbarHostState = scaffoldState.snackbarHostState
 
-    LaunchedEffectWhen(condition = uiEvent is ErrorEvent) {
-        snackbarHostState.showSnackbar((uiEvent as ErrorEvent).message)
+    LaunchedEffect(key1 = uiEvent) {
+        if (uiEvent is ErrorEvent) {
+            snackbarHostState.showSnackbar(uiEvent.message)
+        }
     }
 
     Scaffold(
@@ -84,7 +84,7 @@ fun FeedList(
     lastPosition: Pair<Int, Int>,
     uiEvent: UiEvent,
     onItemClick: (FeedItem) -> Unit,
-    onListSettle: (Int, Int) -> Unit
+    onListSettle: (String, Int) -> Unit
 ) {
     if (list.isNotEmpty()) {
         val state = rememberLazyListState(
@@ -92,12 +92,19 @@ fun FeedList(
             lastPosition.second.coerceAtLeast(0)
         )
 
-        LaunchedEffectWhen(condition = uiEvent is ScrollEvent) {
-            state.animateScrollBy(-16.dp.value)
+        LaunchedEffect(key1 = uiEvent) {
+            if (uiEvent is ScrollEvent) {
+                state.animateScrollBy(-16.dp.value)
+            }
         }
 
-        LaunchedEffectWhen(state.isScrollInProgress.not()) {
-            onListSettle(state.firstVisibleItemIndex, state.firstVisibleItemScrollOffset)
+        LaunchedEffect(key1 = state.isScrollInProgress) {
+            if (state.isScrollInProgress.not()) {
+                onListSettle(
+                    list[state.firstVisibleItemIndex].id,
+                    state.firstVisibleItemScrollOffset
+                )
+            }
         }
 
         LazyColumn(
@@ -145,14 +152,5 @@ fun Item(item: FeedItem, onItemClick: (FeedItem) -> Unit) {
             Divider(Modifier.fillMaxWidth())
         }
         Spacer(modifier = Modifier.width(14.dp))
-    }
-}
-
-@Composable
-fun LaunchedEffectWhen(condition: Boolean, block: suspend CoroutineScope.() -> Unit) {
-    if (condition) {
-        LaunchedEffect(Unit) {
-            block()
-        }
     }
 }

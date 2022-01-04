@@ -88,12 +88,9 @@ class FeedListViewModel @Inject constructor(
         }
     }
 
-    fun onListSettle(index: Int, offset: Int) {
-        val list = uiStateFlow.value.list
-        if (list.isNotEmpty()) {
-            viewModelScope.launch {
-                lastPositionRepository.insert(list[index].id, offset)
-            }
+    fun onListSettle(link: String, offset: Int) {
+        viewModelScope.launch {
+            lastPositionRepository.insert(link, offset)
         }
     }
 }
