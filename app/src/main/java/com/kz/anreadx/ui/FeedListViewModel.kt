@@ -1,21 +1,19 @@
 package com.kz.anreadx.ui
 
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kz.anreadx.dispatcher.Background
 import com.kz.anreadx.ktx.map
 import com.kz.anreadx.repository.FeedListRepository
 import com.kz.anreadx.repository.LastPositionRepository
-import com.kz.anreadx.ui.UiStateStore.Companion.asStore
-import com.kz.flowstore.annotation.FlowStore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -26,14 +24,14 @@ class FeedListViewModel @Inject constructor(
     private val lastPositionRepository: LastPositionRepository
 ) : ViewModel() {
 
-    private val store = UiState().asStore()
+    private var isRefreshing by mutableStateOf(false)
+    private var feedItemList by mutableStateOf(emptyList<FeedItem>())
+    private var lastPosition by mutableStateOf(NO_LAST_POSITION)
 
-    val uiStateFlow: StateFlow<UiState>
-        get() = store.flow
+    val uiState by derivedStateOf { UiState(isRefreshing, feedItemList, lastPosition) }
 
-    private val uiEventChannel = Channel<UiEvent>()
-
-    val uiEventFlow: Flow<UiEvent> = uiEventChannel.receiveAsFlow()
+    var uiEvent: UiEvent by mutableStateOf(Nop)
+        private set
 
     init {
         onRefresh(readAll = false)
@@ -41,7 +39,7 @@ class FeedListViewModel @Inject constructor(
 
     fun onRefresh(readAll: Boolean = true) {
         viewModelScope.launch {
-            store.isRefreshing { true }
+            isRefreshing = true
 
             if (readAll) {
                 launch { listRepository.readAll() }
@@ -50,14 +48,14 @@ class FeedListViewModel @Inject constructor(
             try {
                 listRepository.refresh()
             } catch (e: Exception) {
-                uiEventChannel.send(ErrorEvent(e.message ?: "something wrong"))
+                uiEvent = ErrorEvent(e.message ?: "something wrong")
             }
 
             val list = listRepository.localList().map { feed ->
                 async(background) { FeedItem(feed) }
             }.awaitAll()
 
-            val lastPosition: Pair<Int, Int> = lastPositionRepository.query()
+            val position: Pair<Int, Int> = lastPositionRepository.query()
                 ?.run { list.indexOfFirst { it.id == link } to offset }
                 ?.run {
                     if (first >= 0) {
@@ -67,13 +65,13 @@ class FeedListViewModel @Inject constructor(
                     }
                 } ?: NO_LAST_POSITION
 
-            store.list { list }
-            store.lastPosition { lastPosition }
-            store.isRefreshing { false }
+            feedItemList = list
+            lastPosition = position
+            isRefreshing = false
 
-            if (lastPosition != NO_LAST_POSITION) {
+            if (position != NO_LAST_POSITION) {
                 delay(200)
-                uiEventChannel.send(ScrollEvent())
+                uiEvent = ScrollEvent()
             }
         }
     }
@@ -84,7 +82,7 @@ class FeedListViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            store.list { map { copy(done = if (id == feedItem.id) true else done) } }
+            feedItemList = feedItemList.map { copy(done = if (id == feedItem.id) true else done) }
         }
     }
 
@@ -95,7 +93,6 @@ class FeedListViewModel @Inject constructor(
     }
 }
 
-@FlowStore
 data class UiState(
     val isRefreshing: Boolean = false,
     val list: List<FeedItem> = emptyList(),

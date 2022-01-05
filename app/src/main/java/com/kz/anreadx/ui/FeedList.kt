@@ -27,12 +27,9 @@ fun FeedList(
     navToDetail: (String) -> Unit,
     viewModel: FeedListViewModel = viewModel()
 ) {
-    val state = viewModel.uiStateFlow.collectAsState().value
-    val event = viewModel.uiEventFlow.collectAsState(initial = Nop).value
-
     FeedList(
-        state = state,
-        uiEvent = event,
+        state = viewModel.uiState,
+        uiEvent = viewModel.uiEvent,
         onRefresh = viewModel::onRefresh,
         onItemClick = combine(
             viewModel::onFeedItemClick,
