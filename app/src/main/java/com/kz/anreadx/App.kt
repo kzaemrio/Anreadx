@@ -7,6 +7,8 @@ import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 
+lateinit var coil_image_path: String
+
 @HiltAndroidApp
 class App : Application() {
     override fun onCreate() {
@@ -16,9 +18,12 @@ class App : Application() {
             Dispatchers.Main.apply {
                 // MainDispatcherLoader.loadMainDispatcher()
             }
+
             Job.apply {
                 // initializeDefaultExceptionHandlers()
             }
+
+            coil_image_path = cacheDir.apply { mkdirs() }.resolve("coil_image_cache").absolutePath
         }
     }
 }

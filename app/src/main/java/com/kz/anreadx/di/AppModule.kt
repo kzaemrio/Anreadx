@@ -6,6 +6,7 @@ import coil.ImageLoader
 import coil.annotation.ExperimentalCoilApi
 import coil.disk.DiskCache
 import com.haroldadmin.cnradapter.NetworkResponseAdapterFactory
+import com.kz.anreadx.coil_image_path
 import com.kz.anreadx.dispatcher.Background
 import com.kz.anreadx.model.RssXmlFactory
 import com.kz.anreadx.network.RssService
@@ -25,6 +26,7 @@ import retrofit2.CallAdapter
 import retrofit2.Converter
 import retrofit2.Retrofit
 import retrofit2.create
+import java.io.File
 import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -96,7 +98,10 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(executorService: ExecutorService, interceptor: Interceptor): OkHttpClient {
+    fun provideOkHttpClient(
+        executorService: ExecutorService,
+        interceptor: Interceptor
+    ): OkHttpClient {
         return OkHttpClient.Builder()
             .dispatcher(Dispatcher(executorService))
             .addNetworkInterceptor(interceptor)
@@ -135,8 +140,9 @@ object AppModule {
         background: Background
     ): DiskCache {
         return DiskCache.Builder(context)
-            .directory(context.cacheDir.apply { mkdirs() }.resolve("coil_image_cache"))
+            .directory(File(coil_image_path))
             .cleanupDispatcher(background)
+            .maxSizeBytes(256_000_000L) // maxSizePercent cause blocking by StatFs
             .build()
     }
 }
