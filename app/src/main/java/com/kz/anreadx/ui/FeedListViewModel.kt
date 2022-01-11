@@ -51,8 +51,8 @@ class FeedListViewModel @Inject constructor(
                 uiEvent = ErrorEvent(e.message ?: "something wrong")
             }
 
-            val list = listRepository.localList().map { feed ->
-                async(background) { FeedItem(feed) }
+            val list = listRepository.localList().map {
+                async(background) { FeedItem(this@map) }
             }.awaitAll()
 
             val position: Pair<Int, Int> = lastPositionRepository.query()
