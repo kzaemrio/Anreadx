@@ -118,36 +118,26 @@ fun FeedList(
 
 @Composable
 fun Item(item: FeedItem, onItemClick: (FeedItem) -> Unit) {
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .pointerInput(Unit) {
                 detectTapGestures { onItemClick(item) }
             }
+            .padding(horizontal = 14.dp, vertical = 6.dp)
     ) {
-        Spacer(modifier = Modifier.width(14.dp))
-        Column(Modifier.weight(1F)) {
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = item.title,
-                style = MaterialTheme.typography.body1,
-                color = if (item.done) Color.LightGray else Color.DarkGray
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                text = item.timeLabel,
-                style = MaterialTheme.typography.body2,
-                color = Color.LightGray
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                text = item.content,
-                style = MaterialTheme.typography.body2,
-                color = if (item.done) Color.LightGray else Color.Gray
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            Divider(Modifier.fillMaxWidth())
-        }
-        Spacer(modifier = Modifier.width(14.dp))
+        Text(
+            text = item.title,
+            style = MaterialTheme.typography.body1,
+            color = if (item.done) Color.LightGray else Color.DarkGray
+        )
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        Text(
+            text = item.timeLabel,
+            style = MaterialTheme.typography.body2,
+            color = Color.LightGray
+        )
     }
 }

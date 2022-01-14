@@ -24,22 +24,22 @@ fun FeedItem(feed: Feed) = FeedItem(
 fun done(feed: Feed): Boolean = feed.done
 
 private fun content(feed: Feed): String = feed.run { description }
-    .run { CharStreams.fromString(this) }
-    .run { XMLLexer(this) }
-    .run {
-        sequence {
-            while (true) {
-                val nextToken = nextToken()
-                when (nextToken.type) {
-                    XMLLexer.EOF -> break
-                    XMLLexer.TEXT -> yield(nextToken.text)
-                }
-            }
-        }
-    }
-    .take(5)
-    .joinToString { it }
-    .run { substring(0..minOf(80, lastIndex)) }
+//    .run { CharStreams.fromString(this) }
+//    .run { XMLLexer(this) }
+//    .run {
+//        sequence {
+//            while (true) {
+//                val nextToken = nextToken()
+//                when (nextToken.type) {
+//                    XMLLexer.EOF -> break
+//                    XMLLexer.TEXT -> yield(nextToken.text)
+//                }
+//            }
+//        }
+//    }
+//    .take(5)
+//    .joinToString { it }
+//    .run { substring(0..minOf(80, lastIndex)) }
 
 private fun timeLabel(feed: Feed): String = feed.feedTimeLabel()
 private fun title(feed: Feed): String = feed.title
