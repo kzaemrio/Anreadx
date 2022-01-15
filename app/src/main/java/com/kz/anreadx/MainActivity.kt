@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            FeedList(navToDetail = navToDetail)
+            FeedList(onItemClick = navToDetail)
         }
     }
 }

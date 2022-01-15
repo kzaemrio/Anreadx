@@ -28,6 +28,7 @@ class FeedDetailViewModel @Inject constructor(
     init {
         val link: String = savedStateHandle.get<String>(EXTRA_LINK)!!
         viewModelScope.launch {
+            feedDao.read(link)
             val list = withContext(background) {
                 val description = feedDao.query(link).description
                 val lexer = HTMLLexer(CharStreams.fromString(description))
