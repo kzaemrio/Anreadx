@@ -136,10 +136,9 @@ object AppModule {
     @Provides
     @Singleton
     fun provideDiskCache(
-        @ApplicationContext context: Context,
         background: Background
     ): DiskCache {
-        return DiskCache.Builder(context)
+        return DiskCache.Builder()
             .directory(File(coil_image_path))
             .cleanupDispatcher(background)
             .maxSizeBytes(256_000_000L) // maxSizePercent cause blocking by StatFs
