@@ -17,68 +17,41 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.kz.anreadx.R
-import com.kz.anreadx.ktx.map
-import com.kz.anreadx.model.Feed
-import com.kz.anreadx.model.LastPosition
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 
 @Composable
 fun FeedList(
     onItemClick: (String) -> Unit,
     viewModel: FeedListViewModel = viewModel()
 ) {
+
     val scaffoldState = rememberScaffoldState()
 
-    var isRefreshing by remember {
-        mutableStateOf(false)
-    }
-
-    val scope = rememberCoroutineScope()
-
-    val readAll: () -> Unit = remember(scope) {
-        {
-            scope.launch {
-                viewModel.feedDao.readAll()
-            }
-        }
-    }
-
-    val refresh: () -> Unit = remember(scope, scaffoldState) {
-        {
-            scope.launch {
-                isRefreshing = true
-                val feeds: List<Feed> = try {
-                    viewModel.requestList()
-                } catch (e: Exception) {
-                    scaffoldState.snackbarHostState.showSnackbar(
-                        e.message ?: "something wrong"
-                    )
-                    emptyList()
-                }
-                viewModel.feedDao.insert(feeds)
-                isRefreshing = false
-            }
-        }
-    }
-
     LaunchedEffect("init") {
-        refresh()
+        viewModel.errorMessageFlow.onEach {
+            scaffoldState.snackbarHostState.showSnackbar(it.message)
+        }.launchIn(this)
     }
 
     Scaffold(
         scaffoldState = scaffoldState,
         topBar = { TopAppBar(title = { Text(text = stringResource(id = R.string.app_name)) }) }
     ) {
+
+        val uiState by viewModel.stateFlow.collectAsState()
+
         SwipeRefresh(
-            state = rememberSwipeRefreshState(isRefreshing),
-            onRefresh = { readAll();refresh() }) {
+            state = rememberSwipeRefreshState(uiState.isRefreshing),
+            onRefresh = { viewModel.readAll();viewModel.refresh() }) {
             // box wrapper makes swipe refresh smooth
             Box(Modifier.fillMaxSize()) {
-                LazyFeedList(onItemClick = onItemClick)
+                LazyFeedList(
+                    list = uiState.list,
+                    onSaveLastPosition = viewModel::saveLastPosition,
+                    onItemClick = onItemClick,
+                    viewModel::lastPosition
+                )
             }
         }
     }
@@ -86,40 +59,55 @@ fun FeedList(
 
 @Composable
 fun LazyFeedList(
-    list: List<FeedItem> = list(),
+    list: List<FeedItem>,
+    onSaveLastPosition: (String, Int) -> Unit,
     onItemClick: (String) -> Unit,
-    viewModel: FeedListViewModel = viewModel()
+    queryLastPosition: suspend (List<FeedItem>) -> Pair<Int, Int>
 ) {
     if (list.isNotEmpty()) {
-        val (index, offset) = lastPosition(list)
+        val (index, offset) = lastPosition(list, queryLastPosition)
         if (index >= 0) {
+            LazyFeedList(
+                index = index,
+                offset = offset,
+                list = list,
+                onSaveLastPosition = onSaveLastPosition,
+                onItemClick = onItemClick
+            )
+        }
+    }
+}
 
-            val state = rememberLazyListState(index, offset)
+@Composable
+fun LazyFeedList(
+    index: Int,
+    offset: Int,
+    list: List<FeedItem>,
+    onSaveLastPosition: (String, Int) -> Unit,
+    onItemClick: (String) -> Unit,
+) {
+    val state = rememberLazyListState(index, offset)
 
-            LaunchedEffect(list) {
-                state.animateScrollBy(-16.dp.value)
-            }
+    LazyColumn(
+        state = state,
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = 48.dp)
+    ) {
+        items(items = list, key = { it.id }) {
+            Item(item = it, onItemClick)
+        }
+    }
 
-            LaunchedEffect(state.isScrollInProgress) {
-                if (state.isScrollInProgress.not()) {
-                    viewModel.lastPositionDao.insert(
-                        LastPosition(
-                            list[state.firstVisibleItemIndex].id,
-                            state.firstVisibleItemScrollOffset
-                        )
-                    )
-                }
-            }
+    LaunchedEffect(list) {
+        state.animateScrollBy(-16.dp.value)
+    }
 
-            LazyColumn(
-                state = state,
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 48.dp)
-            ) {
-                items(items = list, key = { it.id }) {
-                    Item(item = it, onItemClick)
-                }
-            }
+    LaunchedEffect(state.isScrollInProgress) {
+        if (state.isScrollInProgress.not()) {
+            onSaveLastPosition(
+                list[state.firstVisibleItemIndex].id,
+                state.firstVisibleItemScrollOffset
+            )
         }
     }
 }
@@ -150,39 +138,17 @@ fun Item(item: FeedItem, onItemClick: (String) -> Unit) {
     }
 }
 
-
 @Composable
-fun lastPosition(list: List<FeedItem>, viewModel: FeedListViewModel = viewModel()): Pair<Int, Int> {
+private fun lastPosition(
+    list: List<FeedItem>,
+    queryLastPosition: suspend (List<FeedItem>) -> Pair<Int, Int>
+): Pair<Int, Int> {
     var result by remember {
         mutableStateOf(-1 to -1)
     }
 
-    LaunchedEffect("init") {
-        result = viewModel.lastPositionDao.query()
-            ?.run { list.indexOfFirst { it.id == link } to offset }
-            ?.run {
-                if (first >= 0) {
-                    this
-                } else {
-                    null
-                }
-            } ?: 0 to 0
-    }
-
-    return result
-}
-
-@Composable
-fun list(viewModel: FeedListViewModel = viewModel()): List<FeedItem> {
-    var result: List<FeedItem> by remember {
-        mutableStateOf(emptyList())
-    }
-
-    LaunchedEffect("init") {
-        viewModel.feedDao.listFlow()
-            .map { it.map { FeedItem(this) } }
-            .onEach { result = it }
-            .flowOn(viewModel.background).launchIn(this)
+    LaunchedEffect(key1 = "init") {
+        result = queryLastPosition(list)
     }
 
     return result
