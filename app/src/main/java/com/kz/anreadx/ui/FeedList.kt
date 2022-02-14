@@ -8,29 +8,37 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.kz.anreadx.R
+import com.ramcosta.composedestinations.annotation.Destination
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
+@Destination(start = true)
 @Composable
 fun FeedList(
     onItemClick: (String) -> Unit,
-    viewModel: FeedListViewModel = viewModel()
+    viewModel: FeedListViewModel = hiltViewModel(),
+    errorMessageFlow: Flow<RefreshErrorEvent> = viewModel.errorMessageFlow
 ) {
 
     val scaffoldState = rememberScaffoldState()
 
     LaunchedEffect("init") {
-        viewModel.errorMessageFlow.onEach {
-            scaffoldState.snackbarHostState.showSnackbar(it.message)
+        errorMessageFlow.onEach {
+            // *launch* makes showSnackbar no blocking
+            launch { scaffoldState.snackbarHostState.showSnackbar(it.message) }
         }.launchIn(this)
     }
 
@@ -85,6 +93,7 @@ fun LazyFeedList(
     list: List<FeedItem>,
     onSaveLastPosition: (String, Int) -> Unit,
     onItemClick: (String) -> Unit,
+    scrollEventFlow: Flow<ScrollEvent> = hiltViewModel<FeedListViewModel>().scrollEventFlow
 ) {
     val state = rememberLazyListState(index, offset)
 
@@ -98,8 +107,10 @@ fun LazyFeedList(
         }
     }
 
-    LaunchedEffect(list) {
-        state.animateScrollBy(-16.dp.value)
+    LaunchedEffect(key1 = "init") {
+        scrollEventFlow.onEach {
+            launch { delay(100);state.animateScrollBy(-16.dp.value) }
+        }.launchIn(this)
     }
 
     LaunchedEffect(state.isScrollInProgress) {

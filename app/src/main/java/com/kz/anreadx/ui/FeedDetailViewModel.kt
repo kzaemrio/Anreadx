@@ -1,9 +1,7 @@
 package com.kz.anreadx.ui
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kz.anreadx.EXTRA_LINK
 import com.kz.anreadx.dispatcher.Background
 import com.kz.anreadx.persistence.FeedDao
 import com.kz.anreadx.xml.HTMLLexer
@@ -16,17 +14,15 @@ import javax.inject.Inject
 
 @HiltViewModel
 class FeedDetailViewModel @Inject constructor(
-    background: Background,
-    feedDao: FeedDao,
-    savedStateHandle: SavedStateHandle
+    private val background: Background,
+    private val feedDao: FeedDao,
 ) : ViewModel() {
 
     private val _stateFlow: MutableStateFlow<List<DetailItem>> = MutableStateFlow(emptyList())
     val stateFlow: StateFlow<List<DetailItem>>
         get() = _stateFlow
 
-    init {
-        val link: String = savedStateHandle.get<String>(EXTRA_LINK)!!
+    fun query(link: String) {
         viewModelScope.launch {
             feedDao.read(link)
             val list = withContext(background) {

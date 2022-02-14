@@ -12,12 +12,14 @@ import com.kz.anreadx.persistence.LastPositionDao
 import com.kz.anreadx.ui.FeedListUiStateStore.Companion.asStore
 import com.kz.flowstore.annotation.FlowStore
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.ObsoleteCoroutinesApi
+import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
+@OptIn(ObsoleteCoroutinesApi::class)
 @HiltViewModel
 class FeedListViewModel @Inject constructor(
     private val background: Background,
@@ -30,9 +32,12 @@ class FeedListViewModel @Inject constructor(
 
     val stateFlow = store.flow
 
-    private val errorMessageChannel = Channel<RefreshErrorEvent>()
+    private val uiEventChannel = BroadcastChannel<UiEvent>(1)
 
-    val errorMessageFlow = errorMessageChannel.consumeAsFlow()
+    val errorMessageFlow: Flow<RefreshErrorEvent> =
+        uiEventChannel.openSubscription().receiveAsFlow().filterIsInstance()
+    val scrollEventFlow: Flow<ScrollEvent> =
+        uiEventChannel.openSubscription().receiveAsFlow().filterIsInstance()
 
     init {
         viewModelScope.launch {
@@ -61,11 +66,12 @@ class FeedListViewModel @Inject constructor(
                     is NetworkResponse.UnknownError -> throw response.error
                 }
             } catch (e: Exception) {
-                errorMessageChannel.send(RefreshErrorEvent(e.message ?: "refresh error"))
+                uiEventChannel.send(RefreshErrorEvent(e.message ?: "refresh error"))
                 emptyList()
             }
             feedDao.insert(list)
             store.isRefreshing { false }
+            uiEventChannel.send(ScrollEvent)
         }
     }
 
@@ -90,6 +96,7 @@ class FeedListViewModel @Inject constructor(
                 null
             }
         } ?: list.lastIndex to 0
+
 }
 
 @FlowStore
@@ -98,4 +105,6 @@ data class FeedListUiState(
     val list: List<FeedItem> = emptyList(),
 )
 
-data class RefreshErrorEvent(val message: String)
+sealed interface UiEvent
+data class RefreshErrorEvent(val message: String) : UiEvent
+object ScrollEvent : UiEvent
