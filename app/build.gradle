@@ -95,7 +95,7 @@ dependencies {
 
     implementation "com.gitlab.mvysny.konsume-xml:konsume-xml:1.0"
 
-    implementation "com.github.haroldadmin:NetworkResponseAdapter:4.2.2"
+    implementation "com.github.haroldadmin:NetworkResponseAdapter:5.0.0"
 
     implementation "com.github.kzaemrio.FlowStore:annotation:1.5.30-1"
     ksp "com.github.kzaemrio.FlowStore:compiler:1.5.30-1"

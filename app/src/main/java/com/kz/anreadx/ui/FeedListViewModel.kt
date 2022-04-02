@@ -61,7 +61,7 @@ class FeedListViewModel @Inject constructor(
             val list = try {
                 when (val response = rssService.rss()) {
                     is NetworkResponse.Success -> response.body.channel.feedList
-                    is NetworkResponse.ServerError -> throw response.error
+                    is NetworkResponse.ServerError -> throw response.error!!
                     is NetworkResponse.NetworkError -> throw response.error
                     is NetworkResponse.UnknownError -> throw response.error
                 }
