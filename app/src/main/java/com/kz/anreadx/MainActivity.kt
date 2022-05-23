@@ -19,6 +19,7 @@ import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.animations.defaults.RootNavGraphDefaultAnimations
 import com.ramcosta.composedestinations.animations.rememberAnimatedNavHostEngine
 import com.ramcosta.composedestinations.manualcomposablecalls.composable
+import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.navigation.navigateTo
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -47,7 +48,7 @@ fun Route() {
     val controller = rememberAnimatedNavController()
     DestinationsNavHost(navGraph = NavGraphs.root, engine = engine, navController = controller) {
         composable(FeedListDestination) {
-            FeedList(onItemClick = { controller.navigateTo(FeedDetailDestination(link = it)) })
+            FeedList(onItemClick = { controller.navigate(FeedDetailDestination(link = it)) })
         }
 
         composable(FeedDetailDestination) {
