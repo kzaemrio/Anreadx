@@ -45,7 +45,7 @@ fun FeedList(
     Scaffold(
         scaffoldState = scaffoldState,
         topBar = { TopAppBar(title = { Text(text = stringResource(id = R.string.app_name)) }) }
-    ) {
+    ) { paddingValues ->
 
         val uiState by viewModel.stateFlow.collectAsState()
 
@@ -53,7 +53,7 @@ fun FeedList(
             state = rememberSwipeRefreshState(uiState.isRefreshing),
             onRefresh = { viewModel.readAll();viewModel.refresh() }) {
             // box wrapper makes swipe refresh smooth
-            Box(Modifier.fillMaxSize()) {
+            Box(Modifier.fillMaxSize().padding(paddingValues)) {
                 LazyFeedList(
                     list = uiState.list,
                     onSaveLastPosition = viewModel::saveLastPosition,
