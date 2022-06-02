@@ -5,10 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.haroldadmin.cnradapter.NetworkResponse
 import com.kz.anreadx.dispatcher.Background
 import com.kz.anreadx.ktx.map
-import com.kz.anreadx.model.LastPosition
 import com.kz.anreadx.network.RssService
 import com.kz.anreadx.persistence.FeedDao
-import com.kz.anreadx.persistence.LastPositionDao
 import com.kz.anreadx.ui.FeedListUiStateStore.Companion.asStore
 import com.kz.flowstore.annotation.FlowStore
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,7 +22,6 @@ import javax.inject.Inject
 class FeedListViewModel @Inject constructor(
     private val background: Background,
     private val feedDao: FeedDao,
-    private val lastPositionDao: LastPositionDao,
     private val rssService: RssService
 ) : ViewModel() {
 
@@ -56,22 +53,24 @@ class FeedListViewModel @Inject constructor(
     }
 
     fun refresh() {
-        viewModelScope.launch {
-            store.isRefreshing { true }
-            val list = try {
-                when (val response = rssService.rss()) {
-                    is NetworkResponse.Success -> response.body.channel.feedList
-                    is NetworkResponse.ServerError -> throw response.error!!
-                    is NetworkResponse.NetworkError -> throw response.error
-                    is NetworkResponse.UnknownError -> throw response.error
+        if (stateFlow.value.isRefreshing.not()) {
+            viewModelScope.launch {
+                store.isRefreshing { true }
+                val list = try {
+                    when (val response = rssService.rss()) {
+                        is NetworkResponse.Success -> response.body.channel.feedList
+                        is NetworkResponse.ServerError -> throw response.error!!
+                        is NetworkResponse.NetworkError -> throw response.error
+                        is NetworkResponse.UnknownError -> throw response.error
+                    }
+                } catch (e: Exception) {
+                    uiEventChannel.send(RefreshErrorEvent(e.message ?: "refresh error"))
+                    emptyList()
                 }
-            } catch (e: Exception) {
-                uiEventChannel.send(RefreshErrorEvent(e.message ?: "refresh error"))
-                emptyList()
+                feedDao.insert(list)
+                store.isRefreshing { false }
+                uiEventChannel.send(ScrollEvent)
             }
-            feedDao.insert(list)
-            store.isRefreshing { false }
-            uiEventChannel.send(ScrollEvent)
         }
     }
 
@@ -80,23 +79,6 @@ class FeedListViewModel @Inject constructor(
             feedDao.readAll()
         }
     }
-
-    fun saveLastPosition(id: String, offset: Int) {
-        viewModelScope.launch {
-            lastPositionDao.insert(LastPosition(id, offset))
-        }
-    }
-
-    suspend fun lastPosition(list: List<FeedItem>): Pair<Int, Int> = lastPositionDao.query()
-        ?.run { list.indexOfFirst { it.id == link } to offset }
-        ?.run {
-            if (first >= 0) {
-                this
-            } else {
-                null
-            }
-        } ?: list.lastIndex to 0
-
 }
 
 @FlowStore

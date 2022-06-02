@@ -73,6 +73,7 @@ dependencies {
 dependencies {
     implementation project(":XmlParser")
     implementation "androidx.compose.material:material:$compose_version"
+    implementation "androidx.compose.material:material-icons-extended:$compose_version"
 
     implementation 'androidx.activity:activity-compose:1.4.0'
 

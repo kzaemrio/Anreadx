@@ -12,7 +12,6 @@ import com.kz.anreadx.model.RssXmlFactory
 import com.kz.anreadx.network.RssService
 import com.kz.anreadx.persistence.AppDatabase
 import com.kz.anreadx.persistence.FeedDao
-import com.kz.anreadx.persistence.LastPositionDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -60,12 +59,6 @@ object AppModule {
     @Singleton
     fun provideFeedDao(appDatabase: AppDatabase): FeedDao {
         return appDatabase.itemDao()
-    }
-
-    @Provides
-    @Singleton
-    fun provideLastPositionDao(appDatabase: AppDatabase): LastPositionDao {
-        return appDatabase.lastPositionDao()
     }
 
     @Provides

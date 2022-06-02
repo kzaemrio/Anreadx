@@ -1,13 +1,18 @@
 package com.kz.anreadx.ui
 
-import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.DoneAll
+import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
@@ -19,7 +24,6 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.kz.anreadx.R
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootNavGraph
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -45,14 +49,32 @@ fun FeedList(
 
     Scaffold(
         scaffoldState = scaffoldState,
-        topBar = { TopAppBar(title = { Text(text = stringResource(id = R.string.app_name)) }) }
+        topBar = {
+            TopAppBar(
+                title = { Text(text = stringResource(id = R.string.app_name)) },
+                actions = {
+                    IconButton(onClick = { viewModel.readAll() }) {
+                        Icon(
+                            imageVector = Icons.Rounded.DoneAll,
+                            contentDescription = stringResource(id = R.string.menu_clear_all)
+                        )
+                    }
+                    IconButton(onClick = { viewModel.refresh() }) {
+                        Icon(
+                            imageVector = Icons.Rounded.Refresh,
+                            contentDescription = stringResource(id = R.string.refresh)
+                        )
+                    }
+                }
+            )
+        }
     ) {
 
         val uiState by viewModel.stateFlow.collectAsState()
 
         SwipeRefresh(
             state = rememberSwipeRefreshState(uiState.isRefreshing),
-            onRefresh = { viewModel.readAll();viewModel.refresh() }) {
+            onRefresh = { viewModel.refresh() }) {
             // box wrapper makes swipe refresh smooth
             Box(
                 Modifier
@@ -61,9 +83,8 @@ fun FeedList(
             ) {
                 LazyFeedList(
                     list = uiState.list,
-                    onSaveLastPosition = viewModel::saveLastPosition,
                     onItemClick = onItemClick,
-                    viewModel::lastPosition
+                    scrollEventFlow = viewModel.scrollEventFlow
                 )
             }
         }
@@ -73,34 +94,16 @@ fun FeedList(
 @Composable
 fun LazyFeedList(
     list: List<FeedItem>,
-    onSaveLastPosition: (String, Int) -> Unit,
     onItemClick: (String) -> Unit,
-    queryLastPosition: suspend (List<FeedItem>) -> Pair<Int, Int>
+    scrollEventFlow: Flow<ScrollEvent>,
 ) {
-    if (list.isNotEmpty()) {
-        val (index, offset) = lastPosition(list, queryLastPosition)
-        if (index >= 0) {
-            LazyFeedList(
-                index = index,
-                offset = offset,
-                list = list,
-                onSaveLastPosition = onSaveLastPosition,
-                onItemClick = onItemClick
-            )
-        }
-    }
-}
+    val state = rememberLazyListState()
 
-@Composable
-fun LazyFeedList(
-    index: Int,
-    offset: Int,
-    list: List<FeedItem>,
-    onSaveLastPosition: (String, Int) -> Unit,
-    onItemClick: (String) -> Unit,
-    scrollEventFlow: Flow<ScrollEvent> = hiltViewModel<FeedListViewModel>().scrollEventFlow
-) {
-    val state = rememberLazyListState(index, offset)
+    LaunchedEffect(key1 = "init") {
+        scrollEventFlow.onEach {
+            launch { state.scrollToItem(0, 0) }
+        }.launchIn(this)
+    }
 
     LazyColumn(
         state = state,
@@ -109,21 +112,6 @@ fun LazyFeedList(
     ) {
         items(items = list, key = { it.id }) {
             Item(item = it, onItemClick)
-        }
-    }
-
-    LaunchedEffect(key1 = "init") {
-        scrollEventFlow.onEach {
-            launch { delay(100);state.animateScrollBy(-16.dp.value) }
-        }.launchIn(this)
-    }
-
-    LaunchedEffect(state.isScrollInProgress) {
-        if (state.isScrollInProgress.not()) {
-            onSaveLastPosition(
-                list[state.firstVisibleItemIndex].id,
-                state.firstVisibleItemScrollOffset
-            )
         }
     }
 }
@@ -152,20 +140,4 @@ fun Item(item: FeedItem, onItemClick: (String) -> Unit) {
             color = Color.LightGray
         )
     }
-}
-
-@Composable
-private fun lastPosition(
-    list: List<FeedItem>,
-    queryLastPosition: suspend (List<FeedItem>) -> Pair<Int, Int>
-): Pair<Int, Int> {
-    var result by remember {
-        mutableStateOf(-1 to -1)
-    }
-
-    LaunchedEffect(key1 = "init") {
-        result = queryLastPosition(list)
-    }
-
-    return result
 }
