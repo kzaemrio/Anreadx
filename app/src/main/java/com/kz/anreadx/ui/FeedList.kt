@@ -8,7 +8,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
@@ -19,13 +18,15 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.kz.anreadx.R
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootNavGraph
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
-@Destination(start = true)
+@RootNavGraph(start = true)
+@Destination
 @Composable
 fun FeedList(
     onItemClick: (String) -> Unit,
@@ -45,7 +46,7 @@ fun FeedList(
     Scaffold(
         scaffoldState = scaffoldState,
         topBar = { TopAppBar(title = { Text(text = stringResource(id = R.string.app_name)) }) }
-    ) { paddingValues ->
+    ) {
 
         val uiState by viewModel.stateFlow.collectAsState()
 
@@ -53,7 +54,11 @@ fun FeedList(
             state = rememberSwipeRefreshState(uiState.isRefreshing),
             onRefresh = { viewModel.readAll();viewModel.refresh() }) {
             // box wrapper makes swipe refresh smooth
-            Box(Modifier.fillMaxSize().padding(paddingValues)) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .padding(top = it.calculateTopPadding(), bottom = it.calculateBottomPadding())
+            ) {
                 LazyFeedList(
                     list = uiState.list,
                     onSaveLastPosition = viewModel::saveLastPosition,

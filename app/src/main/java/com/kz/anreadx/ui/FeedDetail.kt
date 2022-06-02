@@ -36,16 +36,22 @@ fun FeedDetail(
             }
         )
     }) {
-        FeedDetailList(list = viewModel.stateFlow.collectAsState().value)
+        FeedDetailList(
+            modifier = Modifier.padding(
+                top = it.calculateTopPadding(),
+                bottom = it.calculateBottomPadding()
+            ),
+            list = viewModel.stateFlow.collectAsState().value
+        )
     }
 
     viewModel.query(link)
 }
 
 @Composable
-fun FeedDetailList(list: List<DetailItem>) {
+fun FeedDetailList(modifier: Modifier = Modifier, list: List<DetailItem>) {
     LazyColumn(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp)
     ) {
