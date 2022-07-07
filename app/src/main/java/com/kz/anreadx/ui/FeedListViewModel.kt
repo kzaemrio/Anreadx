@@ -33,8 +33,6 @@ class FeedListViewModel @Inject constructor(
 
     val errorMessageFlow: Flow<RefreshErrorEvent> =
         uiEventChannel.openSubscription().receiveAsFlow().filterIsInstance()
-    val scrollEventFlow: Flow<ScrollEvent> =
-        uiEventChannel.openSubscription().receiveAsFlow().filterIsInstance()
 
     init {
         viewModelScope.launch {
@@ -69,7 +67,6 @@ class FeedListViewModel @Inject constructor(
                 }
                 feedDao.insert(list)
                 store.isRefreshing { false }
-                uiEventChannel.send(ScrollEvent)
             }
         }
     }
@@ -89,4 +86,3 @@ data class FeedListUiState(
 
 sealed interface UiEvent
 data class RefreshErrorEvent(val message: String) : UiEvent
-object ScrollEvent : UiEvent

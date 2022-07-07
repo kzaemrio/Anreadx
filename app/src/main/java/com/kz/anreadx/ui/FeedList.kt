@@ -3,6 +3,7 @@ package com.kz.anreadx.ui
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
@@ -13,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
@@ -34,11 +36,11 @@ import kotlinx.coroutines.launch
 @Composable
 fun FeedList(
     onItemClick: (String) -> Unit,
-    viewModel: FeedListViewModel = hiltViewModel(),
-    errorMessageFlow: Flow<RefreshErrorEvent> = viewModel.errorMessageFlow
+    viewModel: FeedListViewModel = hiltViewModel()
 ) {
-
     val scaffoldState = rememberScaffoldState()
+
+    val errorMessageFlow: Flow<RefreshErrorEvent> = viewModel.errorMessageFlow
 
     LaunchedEffect("init") {
         errorMessageFlow.onEach {
@@ -84,7 +86,6 @@ fun FeedList(
                 LazyFeedList(
                     list = uiState.list,
                     onItemClick = onItemClick,
-                    scrollEventFlow = viewModel.scrollEventFlow
                 )
             }
         }
@@ -95,14 +96,9 @@ fun FeedList(
 fun LazyFeedList(
     list: List<FeedItem>,
     onItemClick: (String) -> Unit,
-    scrollEventFlow: Flow<ScrollEvent>,
 ) {
-    val state = rememberLazyListState()
-
-    LaunchedEffect(key1 = "init") {
-        scrollEventFlow.onEach {
-            launch { state.scrollToItem(0, 0) }
-        }.launchIn(this)
+    val state = rememberSaveable(inputs = arrayOf(list.size), saver = LazyListState.Saver) {
+        LazyListState(0, 0)
     }
 
     LazyColumn(
