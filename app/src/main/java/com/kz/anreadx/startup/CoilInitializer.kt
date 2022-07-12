@@ -2,14 +2,15 @@ package com.kz.anreadx.startup
 
 import android.content.Context
 import androidx.startup.Initializer
-import com.jakewharton.threetenabp.AndroidThreeTen
+import coil.Coil
 import com.kz.anreadx.di.diExecutor
+import com.kz.anreadx.di.diImageLoader
 import java.util.*
 
-class AndroidThreeTenInitializer : Initializer<Unit> {
+class CoilInitializer : Initializer<Unit> {
     override fun create(context: Context) {
         context.diExecutor.execute {
-            AndroidThreeTen.init(context)
+            Coil.setImageLoader(context.diImageLoader)
         }
     }
 

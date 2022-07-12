@@ -29,6 +29,10 @@
             <meta-data
                 android:name="com.kz.anreadx.startup.AndroidThreeTenInitializer"
                 android:value="androidx.startup" />
+
+            <meta-data
+                android:name="com.kz.anreadx.startup.CoilInitializer"
+                android:value="androidx.startup" />
         </provider>
     </application>
 </manifest>
