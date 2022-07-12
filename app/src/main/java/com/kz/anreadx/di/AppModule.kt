@@ -3,10 +3,8 @@ package com.kz.anreadx.di
 import android.content.Context
 import androidx.room.Room
 import coil.ImageLoader
-import coil.annotation.ExperimentalCoilApi
 import coil.disk.DiskCache
 import com.haroldadmin.cnradapter.NetworkResponseAdapterFactory
-import com.kz.anreadx.coil_image_path
 import com.kz.anreadx.dispatcher.Background
 import com.kz.anreadx.model.RssXmlFactory
 import com.kz.anreadx.network.RssService
@@ -109,7 +107,6 @@ object AppModule {
         }
     }
 
-    @OptIn(ExperimentalCoilApi::class)
     @Provides
     @Singleton
     fun provideImageLoader(
@@ -125,16 +122,16 @@ object AppModule {
             .build()
     }
 
-    @OptIn(ExperimentalCoilApi::class)
     @Provides
     @Singleton
     fun provideDiskCache(
+        @ApplicationContext context: Context,
         background: Background
     ): DiskCache {
         return DiskCache.Builder()
-            .directory(File(coil_image_path))
+            .directory(File(context.cacheDir, "coil_image_cache"))
             .cleanupDispatcher(background)
-            .maxSizeBytes(256_000_000L) // maxSizePercent cause blocking by StatFs
+            .maxSizeBytes(100_000_000L) // maxSizePercent cause blocking by StatFs
             .build()
     }
 }
