@@ -6,6 +6,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -14,15 +16,19 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.kz.anreadx.R
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
 
 @Destination
 @Composable
 fun FeedDetail(
     link: String,
-    onBackClick: () -> Unit,
+    navigator: DestinationsNavigator,
     viewModel: FeedDetailViewModel = hiltViewModel()
 ) {
+
+    val onBackClick: () -> Unit by rememberUpdatedState(newValue = { navigator.navigateUp() })
+
     Scaffold(topBar = {
         TopAppBar(
             title = { Text(text = stringResource(id = R.string.app_name)) },

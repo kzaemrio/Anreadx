@@ -5,15 +5,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.DoneAll
 import androidx.compose.material.icons.rounded.Refresh
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,8 +20,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.kz.anreadx.R
+import com.kz.anreadx.ui.destinations.FeedDetailDestination
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootNavGraph
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -35,7 +33,7 @@ import kotlinx.coroutines.launch
 @Destination
 @Composable
 fun FeedList(
-    onItemClick: (String) -> Unit,
+    navigator: DestinationsNavigator,
     viewModel: FeedListViewModel = hiltViewModel()
 ) {
     val scaffoldState = rememberScaffoldState()
@@ -73,6 +71,10 @@ fun FeedList(
     ) {
 
         val uiState by viewModel.stateFlow.collectAsState()
+
+        val onItemClick: (String) -> Unit by rememberUpdatedState(newValue = {
+            navigator.navigate(FeedDetailDestination(it))
+        })
 
         SwipeRefresh(
             state = rememberSwipeRefreshState(uiState.isRefreshing),
