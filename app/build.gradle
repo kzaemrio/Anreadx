@@ -7,13 +7,13 @@ plugins {
 }
 
 android {
-    compileSdk 32
+    compileSdk 33
     buildToolsVersion "30.0.3"
 
     defaultConfig {
         applicationId "com.kz.anreadx"
         minSdk 24
-        targetSdk 32
+        targetSdk 33
         versionCode 1
         versionName "1.0"
 
@@ -80,7 +80,7 @@ dependencies {
 
     implementation "com.google.accompanist:accompanist-swiperefresh:0.25.1"
 
-    implementation 'io.coil-kt:coil-compose:2.1.0'
+    implementation 'io.coil-kt:coil-compose:2.2.1'
 
     def room_version = "2.4.3"
     implementation "androidx.room:room-runtime:$room_version"

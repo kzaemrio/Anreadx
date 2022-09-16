@@ -8,7 +8,7 @@ java {
 }
 
 dependencies {
-    antlr("org.antlr:antlr4:4.10.1") {
+    antlr("org.antlr:antlr4:4.11.1") {
         exclude group: 'com.ibm.icu'
         exclude group: 'org.glassfish'
         exclude group: 'org.abego.treelayout'
