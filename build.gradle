@@ -17,6 +17,7 @@ plugins {
     id "org.jetbrains.kotlin.android" version "$kotlin_version" apply false
     id 'com.google.devtools.ksp' version "$ksp_version" apply false
     id 'com.google.dagger.hilt.android' version "$hilt_version" apply false
+    id 'com.sergei-lapin.napt' version "1.17" apply false
 }
 
 task clean(type: Delete) {
