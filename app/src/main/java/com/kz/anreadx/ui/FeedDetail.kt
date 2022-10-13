@@ -1,5 +1,6 @@
 package com.kz.anreadx.ui
 
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -23,11 +24,11 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 @Composable
 fun FeedDetail(
     link: String,
-    navigator: DestinationsNavigator,
     viewModel: FeedDetailViewModel = hiltViewModel()
 ) {
 
-    val onBackClick: () -> Unit by rememberUpdatedState(newValue = { navigator.navigateUp() })
+    val dispatcherOwner = LocalOnBackPressedDispatcherOwner.current
+    val onBackClick: () -> Unit by rememberUpdatedState(newValue = { dispatcherOwner?.onBackPressedDispatcher?.onBackPressed() })
 
     Scaffold(topBar = {
         TopAppBar(
