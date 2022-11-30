@@ -9,16 +9,18 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.DoneAll
 import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.google.accompanist.swiperefresh.SwipeRefresh
-import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.kz.anreadx.R
 import com.kz.anreadx.ui.destinations.FeedDetailDestination
 import com.ramcosta.composedestinations.annotation.Destination
@@ -29,12 +31,12 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterialApi::class)
 @RootNavGraph(start = true)
 @Destination
 @Composable
 fun FeedList(
-    navigator: DestinationsNavigator,
-    viewModel: FeedListViewModel = hiltViewModel()
+    navigator: DestinationsNavigator, viewModel: FeedListViewModel = hiltViewModel()
 ) {
     val scaffoldState = rememberScaffoldState()
 
@@ -47,28 +49,22 @@ fun FeedList(
         }.launchIn(this)
     }
 
-    Scaffold(
-        scaffoldState = scaffoldState,
-        topBar = {
-            TopAppBar(
-                title = { Text(text = stringResource(id = R.string.app_name)) },
-                actions = {
-                    IconButton(onClick = { viewModel.readAll() }) {
-                        Icon(
-                            imageVector = Icons.Rounded.DoneAll,
-                            contentDescription = stringResource(id = R.string.menu_clear_all)
-                        )
-                    }
-                    IconButton(onClick = { viewModel.refresh() }) {
-                        Icon(
-                            imageVector = Icons.Rounded.Refresh,
-                            contentDescription = stringResource(id = R.string.refresh)
-                        )
-                    }
-                }
-            )
-        }
-    ) {
+    Scaffold(scaffoldState = scaffoldState, topBar = {
+        TopAppBar(title = { Text(text = stringResource(id = R.string.app_name)) }, actions = {
+            IconButton(onClick = { viewModel.readAll() }) {
+                Icon(
+                    imageVector = Icons.Rounded.DoneAll,
+                    contentDescription = stringResource(id = R.string.menu_clear_all)
+                )
+            }
+            IconButton(onClick = { viewModel.refresh() }) {
+                Icon(
+                    imageVector = Icons.Rounded.Refresh,
+                    contentDescription = stringResource(id = R.string.refresh)
+                )
+            }
+        })
+    }) {
 
         val uiState by viewModel.stateFlow.collectAsState()
 
@@ -76,20 +72,29 @@ fun FeedList(
             navigator.navigate(FeedDetailDestination(it))
         })
 
-        SwipeRefresh(
-            state = rememberSwipeRefreshState(uiState.isRefreshing),
-            onRefresh = { viewModel.refresh() }) {
-            // box wrapper makes swipe refresh smooth
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .padding(top = it.calculateTopPadding(), bottom = it.calculateBottomPadding())
-            ) {
-                LazyFeedList(
-                    list = uiState.list,
-                    onItemClick = onItemClick,
-                )
-            }
+        val refreshing = uiState.isRefreshing
+
+        val state = rememberPullRefreshState(
+            refreshing = refreshing,
+            onRefresh = { viewModel.refresh() }
+        )
+
+        Box(
+            Modifier
+                .fillMaxSize()
+                .pullRefresh(state)
+                .padding(top = it.calculateTopPadding(), bottom = it.calculateBottomPadding())
+        ) {
+            LazyFeedList(
+                list = uiState.list,
+                onItemClick = onItemClick,
+            )
+
+            PullRefreshIndicator(
+                refreshing = refreshing,
+                state = state,
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
         }
     }
 }
@@ -116,14 +121,12 @@ fun LazyFeedList(
 
 @Composable
 fun Item(item: FeedItem, onItemClick: (String) -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .pointerInput(Unit) {
-                detectTapGestures { onItemClick(item.id) }
-            }
-            .padding(horizontal = 14.dp, vertical = 6.dp)
-    ) {
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .pointerInput(Unit) {
+            detectTapGestures { onItemClick(item.id) }
+        }
+        .padding(horizontal = 14.dp, vertical = 6.dp)) {
         Text(
             text = item.title,
             style = MaterialTheme.typography.body1,
@@ -133,9 +136,7 @@ fun Item(item: FeedItem, onItemClick: (String) -> Unit) {
         Spacer(modifier = Modifier.height(6.dp))
 
         Text(
-            text = item.timeLabel,
-            style = MaterialTheme.typography.body2,
-            color = Color.LightGray
+            text = item.timeLabel, style = MaterialTheme.typography.body2, color = Color.LightGray
         )
     }
 }
