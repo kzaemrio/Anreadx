@@ -1,5 +1,5 @@
 plugins {
-    id 'antlr'
+    id "antlr"
 }
 
 java {
@@ -9,12 +9,12 @@ java {
 
 dependencies {
     antlr(libs.antlr) {
-        exclude group: 'com.ibm.icu'
-        exclude group: 'org.glassfish'
-        exclude group: 'org.abego.treelayout'
-//        exclude group: 'org.antlr', module: 'antlr4-runtime'
-//        exclude group: 'org.antlr', module: 'antlr-runtime'
-//        exclude group: 'org.antlr', module: 'ST4'
+        exclude group: "com.ibm.icu"
+        exclude group: "org.glassfish"
+        exclude group: "org.abego.treelayout"
+//        exclude group: "org.antlr", module: "antlr4-runtime"
+//        exclude group: "org.antlr", module: "antlr-runtime"
+//        exclude group: "org.antlr", module: "ST4"
     }
 }
 
