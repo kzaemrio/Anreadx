@@ -4,7 +4,7 @@ plugins {
     // bash gradlew dependencyUpdates -Drevision=release -DoutputFormatter=html
     alias libs.plugins.versions
 
-    alias libs.plugins.apg apply false
+    alias libs.plugins.agp apply false
     alias libs.plugins.kotlin apply false
     alias libs.plugins.ksp apply false
     alias libs.plugins.hilt apply false

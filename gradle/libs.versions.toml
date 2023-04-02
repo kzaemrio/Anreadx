@@ -1,6 +1,6 @@
 [versions]
 versions = "0.45.0"
-apg = "7.4.1"
+agp = "7.4.2"
 kotlin = "1.8.10"
 ksp = "1.8.10-1.0.9"
 hilt = "2.44.2"
@@ -67,7 +67,7 @@ compose-destinations = ["compose-destinations", "compose-destinations-anim"]
 
 [plugins]
 versions = { id = "com.github.ben-manes.versions", version.ref = "versions" }
-apg = { id = "com.android.application", version.ref = "apg" }
+agp = { id = "com.android.application", version.ref = "agp" }
 kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
