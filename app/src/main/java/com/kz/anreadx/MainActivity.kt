@@ -8,14 +8,12 @@ import androidx.compose.animation.slideIn
 import androidx.compose.animation.slideOut
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.IntOffset
-import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 import com.kz.anreadx.ui.NavGraphs
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.animations.defaults.RootNavGraphDefaultAnimations
 import com.ramcosta.composedestinations.animations.rememberAnimatedNavHostEngine
 import dagger.hilt.android.AndroidEntryPoint
 
-@ExperimentalMaterialNavigationApi
 @ExperimentalAnimationApi
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -27,7 +25,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@ExperimentalMaterialNavigationApi
 @ExperimentalAnimationApi
 @Composable
 fun Route() {

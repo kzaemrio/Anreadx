@@ -12,6 +12,7 @@ import com.kz.flowstore.annotation.FlowStore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
@@ -29,10 +30,11 @@ class FeedListViewModel @Inject constructor(
 
     val stateFlow = store.flow
 
-    private val uiEventChannel = BroadcastChannel<UiEvent>(1)
+    private val uiEventChannel = Channel<UiEvent>(1)
 
-    val errorMessageFlow: Flow<RefreshErrorEvent> =
-        uiEventChannel.openSubscription().receiveAsFlow().filterIsInstance()
+    // TODO: error handle
+//    val errorMessageFlow: Flow<RefreshErrorEvent> =
+//        uiEventChannel.openSubscription().receiveAsFlow().filterIsInstance()
 
     init {
         viewModelScope.launch {

@@ -7,13 +7,13 @@ plugins {
 }
 
 android {
-    compileSdk 33
-    buildToolsVersion "30.0.3"
+    namespace = "com.kz.anreadx"
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.kz.anreadx"
         minSdk 24
-        targetSdk 33
+        targetSdk 34
         versionCode 1
         versionName "1.0"
 

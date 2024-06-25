@@ -40,14 +40,15 @@ fun FeedList(
 ) {
     val scaffoldState = rememberScaffoldState()
 
-    val errorMessageFlow: Flow<RefreshErrorEvent> = viewModel.errorMessageFlow
+    // TODO: error handle
+//    val errorMessageFlow: Flow<RefreshErrorEvent> = viewModel.errorMessageFlow
 
-    LaunchedEffect("init") {
-        errorMessageFlow.onEach {
-            // *launch* makes showSnackbar no blocking
-            launch { scaffoldState.snackbarHostState.showSnackbar(it.message) }
-        }.launchIn(this)
-    }
+//    LaunchedEffect("init") {
+//        errorMessageFlow.onEach {
+//            // *launch* makes showSnackbar no blocking
+//            launch { scaffoldState.snackbarHostState.showSnackbar(it.message) }
+//        }.launchIn(this)
+//    }
 
     Scaffold(scaffoldState = scaffoldState, topBar = {
         TopAppBar(title = { Text(text = stringResource(id = R.string.app_name)) }, actions = {
