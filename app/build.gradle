@@ -2,7 +2,6 @@ plugins {
     id "com.android.application"
     id "org.jetbrains.kotlin.android"
     id "com.google.devtools.ksp"
-    id "com.sergei-lapin.napt"
     id "dagger.hilt.android.plugin"
 }
 
@@ -100,7 +99,7 @@ dependencies {
 
     implementation libs.hilt.navigation.compose
     implementation libs.hilt
-    annotationProcessor libs.hilt.compiler
+    ksp libs.hilt.compiler
 
     implementation libs.bundles.compose.destinations
     ksp libs.compose.destinations.ksp
